@@ -47,21 +47,39 @@ def classify(in_x, data_set, labels, k):
     distinces = sq_distinces ** 0.5
     # 排序,升序(返回结果为索引,如[17,23,1,0],排序后返回[3,2,0,1])
     sorted_dist_indices = distinces.argsort()
-    print('最近的点:%s' % labels[sorted_dist_indices[0]])
+    # print('最近的点:%s' % labels[sorted_dist_indices[0]])
     # 存储最近的k个点
     class_count = {}
     for i in range(k):
         vote_label = labels[sorted_dist_indices[i]]
         class_count[vote_label] = class_count.get(vote_label, 0) + 1
+    # print(class_count)
+    # 根据字典class_count的value进行降序排列
+    # 在最近点案例中,value都是1,下面的排序等于没做
     sorted_class_count = sorted(class_count.items(),
                                 key=operator.itemgetter(1), reverse=True)
+    # print(sorted_class_count)
     return sorted_class_count[0][0]
 
 
-# if __name__ == "__main__":
-#     group, labels = create_data_set()
-#     nearest = classify([0, 0], group, labels, 3)
-#     print(nearest)
+def file2matrix(filename):
+    # 获取文件行数
+    fr = open(filename)
+    array_lines = fr.readlines()
+    amount = len(array_lines)
+    #
+    return_matrix = zeros((amount, 3))
+    class_label_vector = []
+    index = 0
+    for line in array_lines:
+        # 截取掉回车符
+        line = line.strip()
+        list_from_line = line.split('\t')
+        return_matrix[index, :] = list_from_line[0:3]
+        class_label_vector.append(int(list_from_line[-1]))
+        index += 1
+    return return_matrix, class_label_vector
+
 
 """
 # 会输出(2,4,2)
@@ -80,3 +98,6 @@ shape([
     ]
 ])
 """
+
+
+
