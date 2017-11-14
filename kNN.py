@@ -21,6 +21,62 @@ import operator
 
 
 def create_data_set():
-    group = array([[1.0, 1.1], [1.0, 1.0], [0, 0], [0, 0.1]])
-    labels = ['A', 'A', 'B', 'B']
+    group = array([[1.0, 1.1], [1.0, 1.0], [0, 1], [0, 0.1]])
+    labels = ['A', 'C', 'B', 'D']
     return group, labels
+
+
+"""
+    in_x        用于分类的输入向量
+    data_set    输入的训练样本集
+    labels      标签向量
+    k           用于选择最近邻居的数目
+"""
+
+
+def classify(in_x, data_set, labels, k):
+    # 获取data_set的第一维长度
+    data_set_size = data_set.shape[0]
+    # 分别计算输入向量与data_set集合中各点的向量差,并存入数组中
+    diff_arr = tile(in_x, (data_set_size, 1)) - data_set
+    # 平方
+    sq_diff_arr = diff_arr ** 2
+    # 求平方和
+    sq_distinces = sq_diff_arr.sum(axis=1)
+    # 开根,得各点与输入向量的距离值集合
+    distinces = sq_distinces ** 0.5
+    # 排序,升序(返回结果为索引,如[17,23,1,0],排序后返回[3,2,0,1])
+    sorted_dist_indices = distinces.argsort()
+    print('最近的点:%s' % labels[sorted_dist_indices[0]])
+    # 存储最近的k个点
+    class_count = {}
+    for i in range(k):
+        vote_label = labels[sorted_dist_indices[i]]
+        class_count[vote_label] = class_count.get(vote_label, 0) + 1
+    sorted_class_count = sorted(class_count.items(),
+                                key=operator.itemgetter(1), reverse=True)
+    return sorted_class_count[0][0]
+
+
+# if __name__ == "__main__":
+#     group, labels = create_data_set()
+#     nearest = classify([0, 0], group, labels, 3)
+#     print(nearest)
+
+"""
+# 会输出(2,4,2)
+shape([
+    [
+        [1, 1],
+        [1, 2],
+        [1, 3],
+        [1, 4]
+    ],
+    [
+        [1, 1],
+        [1, 2],
+        [1, 3],
+        [1, 4]
+    ]
+])
+"""
