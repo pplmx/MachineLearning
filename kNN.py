@@ -19,6 +19,7 @@
 from numpy import *
 import operator
 import matplotlib.pyplot as plt
+from os import listdir
 
 
 def create_data_set():
@@ -90,7 +91,7 @@ def file2array(filename):
 def show_data_in_chart():
     plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
     plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
-    dating_data_arr, dating_labels = file2array('datingTestSet2.txt')
+    dating_data_arr, dating_labels = file2array('resource/datingTestSet2.txt')
     # new figure
     fig = plt.figure()
     # 在1行1列,第一个子图作画;如233,在2行3列共有6个子图的图中,在第3个子图中作画
@@ -183,7 +184,7 @@ def dating_class_test():
     # 用于测试的数据,占总数据的百分比
     # [如:已有100条数据,其中90条作为样本训练数据,剩余10条用于测试算法,检测算法的正确率]
     test_ratio = 0.10
-    dating_data_arr, dating_labels = file2array('datingTestSet2.txt')
+    dating_data_arr, dating_labels = file2array('resource/datingTestSet2.txt')
     norm_arr, ranges, min_vals = auto_norm(dating_data_arr)
     length = norm_arr.shape[0]
     # 测试数据总数
@@ -209,7 +210,7 @@ def classify_person():
     game_percent = float(input('percentage of time spent playing video games?'))
     fly_miles = float(input('frequent flier miles earned per year?'))
     how_much_ice_cream = float(input('liters of ice cream consumed per week?'))
-    dating_data_arr, dating_labels = file2array('datingTestSet2.txt')
+    dating_data_arr, dating_labels = file2array('resource/datingTestSet2.txt')
     norm_arr, ranges, min_vals = auto_norm(dating_data_arr)
     in_arr = array([fly_miles, game_percent, how_much_ice_cream])
     classifier_result = classify((in_arr - min_vals) / ranges, norm_arr, dating_labels, 3)
@@ -217,6 +218,11 @@ def classify_person():
 
 
 def img2vector(filename):
+    """
+    将32*32的二进制图像矩阵转化为1*1024的向量
+    :param filename:
+    :return:
+    """
     return_vector = zeros((1, 1024))
     fr = open(filename)
     for i in range(32):
@@ -226,8 +232,45 @@ def img2vector(filename):
     return return_vector
 
 
+def handwriting_class_test():
+    handwriting_labels = []
+    # 训练数据
+    training_file_list = listdir('resource/digits/trainingDigits')
+    length = len(training_file_list)
+    training_arr = zeros((length, 1024))
+    for i in range(length):
+        # 获取文件名,含后缀
+        filename_str = training_file_list[i]
+        file_str = filename_str.split('.')[0]
+        # 获取文件中存储二进制图像,表示的数字
+        class_num_str = int(file_str.split('_')[0])
+        handwriting_labels.append(class_num_str)
+        # 将各文件生成的1*1024向量分别存入training_arr
+        training_arr[i, :] = img2vector('resource/digits/trainingDigits/%s' % filename_str)
+    # 测试数据
+    test_file_list = listdir('resource/digits/testDigits')
+    error_count = 0.0
+    length = len(test_file_list)
+    for i in range(length):
+        filename_str = test_file_list[i]
+        file_str = filename_str.split('.')[0]
+        class_num_str = int(file_str.split('_')[0])
+        # 读取一个测试文件,并生成1*1024的向量,赋值给vector_under_test
+        vector_under_test = img2vector('resource/digits/testDigits/%s' % filename_str)
+        classifier_result = classify(vector_under_test, training_arr, handwriting_labels, 3)
+        print('The classifier came back with: %d,the real answer is: %d'
+              % (classifier_result, class_num_str))
+        if classifier_result != class_num_str:
+            error_count += 1.0
+    print('The total number of errors is: %d' % error_count)
+    print('The total error rate is: %f' % (error_count/length))
+
+
 if __name__ == '__main__':
     # show_data_in_chart()
     # 通过调整test_ratio的比例,以及k的值,使结果最优
     # dating_class_test()
-    classify_person()
+    # classify_person()
+    # test_vector = img2vector('resource/digits/testDigits/0_0.txt')
+    # print(test_vector[0, 0:32])
+    handwriting_class_test()
