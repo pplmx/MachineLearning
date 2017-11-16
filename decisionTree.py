@@ -17,3 +17,42 @@
     适用数据范围：
         数值型和标称型
 """
+from math import log
+
+
+def calc_shannon_entropy(data_set):
+    num_entries = len(data_set)
+    label_counts = {}
+    for feat_vector in data_set:
+        current_label = feat_vector[-1]
+        if current_label not in label_counts.keys():
+            label_counts[current_label] = 0
+        label_counts[current_label] += 1
+    shannon_entropy = 0.0
+    for key in label_counts:
+        # 计算该分类的概率
+        probability = label_counts[key] / num_entries
+        # 通过循环,将各分类的信息期望值相加
+        shannon_entropy -= probability * log(probability, 2)
+    # 返回香农熵
+    return shannon_entropy
+
+
+def create_data_set():
+    data_set = [
+        [1, 1, 'yes'],
+        [1, 1, 'yes'],
+        [1, 0, 'no'],
+        [0, 1, 'no'],
+        [0, 1, 'no']
+    ]
+    labels = ['no surfacing', 'flippers']
+    return data_set, labels
+
+
+if __name__ == '__main__':
+    my_data_set, my_labels = create_data_set()
+    print(my_data_set)
+    print(my_labels)
+    my_shannon_entropy = calc_shannon_entropy(my_data_set)
+    print(my_shannon_entropy)
