@@ -17,6 +17,7 @@
     适用数据范围：
         数值型和标称型
 """
+from collections import Counter
 from math import log
 
 
@@ -38,6 +39,25 @@ def calc_shannon_entropy(data_set):
     return shannon_entropy
 
 
+def calc_shannon_entropy2(data_set):
+    """
+        通过列表推导式,及Counter,实现香农熵的计算
+    :param data_set:
+    :return:
+    """
+    # 取出'yes','yes','no'等数据放到数组中
+    class_count = [sample[-1] for sample in data_set]
+    # 获取数据集长度
+    length = len(data_set)
+    # 对'yes','no'等各分类出现的次数计算
+    class_count = Counter(class_count)
+    shannon_entropy = 0.
+    # 计算香农熵
+    for times in class_count.values():
+        shannon_entropy -= times / length * log(times / length, 2)
+    return shannon_entropy
+
+
 def create_data_set():
     data_set = [
         [1, 1, 'yes'],
@@ -56,3 +76,4 @@ if __name__ == '__main__':
     print(my_labels)
     my_shannon_entropy = calc_shannon_entropy(my_data_set)
     print(my_shannon_entropy)
+    print(calc_shannon_entropy2(my_data_set))
