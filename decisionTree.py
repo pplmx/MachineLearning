@@ -150,8 +150,6 @@ def majority_counter(class_list):
         if vote not in class_count.keys():
             class_count[vote] = 0
         class_count[vote] += 1
-    # class_count = [vote[-1] for vote in class_count]
-    # class_count = Counter(class_count)
     sorted_class_count = sorted(class_count.items(), key=operator.itemgetter(1), reverse=True)
     return sorted_class_count[0][0]
 
@@ -161,18 +159,24 @@ def create_tree(data_set, labels):
     class_list = [example[-1] for example in data_set]
     # 类别完全相同,则停止继续划分
     if class_list.count(class_list[0]) == len(class_list):
+        # 若只有一类,则某个类别标签的数量,应该和它的数据长度相等
         return class_list[0]
-    # 遍历完所有特征时,返回出现次数最多的类别
+    # 遍历完所有特征时,类别标签还是不唯一,则返回出现次数最多的类别
     if len(data_set[0]) == 1:
         return majority_counter(class_list)
+    # 最佳特征属性的索引
     best_feature = choose_best_feature2split(data_set)
+    # 最佳特征标记
     best_feature_label = labels[best_feature]
+    # 创建字典,存储决策树
     my_tree = {best_feature_label: {}}
     del(labels[best_feature])
+    # 获取该特征的所有的值
     feature_values = [example[best_feature] for example in data_set]
     unique_values = set(feature_values)
     for value in unique_values:
         sub_labels = labels[:]
+        # 递归不断创建分支
         my_tree[best_feature_label][value] = create_tree(split_data_set(data_set, best_feature, value), sub_labels)
     return my_tree
 
@@ -184,3 +188,5 @@ if __name__ == '__main__':
     my_shannon_entropy = calc_shannon_entropy(my_data_set)
     print(my_shannon_entropy)
     print(calc_shannon_entropy2(my_data_set))
+    decision_tree = create_tree(my_data_set,my_labels)
+    print(decision_tree)
