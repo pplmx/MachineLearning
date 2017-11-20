@@ -16,8 +16,8 @@ decision_node = dict(boxstyle='sawtooth', fc='0.8')
 leaf_node = dict(boxstyle='round4', fc='0.8')
 arrow_args = dict(arrowstyle='<-')
 ax1 = None
-off_x = 0.
-off_y = 0.
+offset_x = 0.
+offset_y = 0.
 total_width = 0.
 total_depth = 0.
 
@@ -50,7 +50,6 @@ def get_num_leafs(my_tree):
 
 def get_tree_depth(my_tree):
     max_depth = 0
-    # first_str = my_tree.keys()[0]
     first_str = list(my_tree.keys())[0]
     second_dict = my_tree[first_str]
     for key in second_dict.keys():
@@ -93,27 +92,27 @@ def plot_mid_text(center_coordinate, parent_coordinate, txt_str):
 def plot_tree(my_tree, parent_coordinate, node_txt):
     # 全局变量的引用,不需要global;修改需要
     # 特例,如果字典、列表等如果只是修改其中的元素值，可以不需要global声明
-    global off_x, off_y
+    global offset_x, offset_y
     num_leafs = get_num_leafs(my_tree)
     first_str = list(my_tree.keys())[0]
     # 子节点坐标
-    center_coordinate = (off_x + (1.0 + num_leafs) / (2 * total_width), off_y)
+    center_coordinate = (offset_x + (1.0 + num_leafs) / (2 * total_width), offset_y)
     # 父子节点之间,添加文本信息
     plot_mid_text(center_coordinate, parent_coordinate, node_txt)
     # 绘制分支点(树根或内点)
     plot_node(first_str, center_coordinate, parent_coordinate, decision_node)
     second_dict = my_tree[first_str]
-    off_y = off_y - 1.0 / total_depth
+    offset_y = offset_y - 1.0 / total_depth
     for key in second_dict.keys():
         if type(second_dict[key]).__name__ == 'dict':
             # 递归绘制子树
             plot_tree(second_dict[key], center_coordinate, str(key))
         else:
-            off_x = off_x + 1.0 / total_width
+            offset_x = offset_x + 1.0 / total_width
             # 绘制叶节点
-            plot_node(second_dict[key], (off_x, off_y), center_coordinate, leaf_node)
-            plot_mid_text((off_x, off_y), center_coordinate, str(key))
-    off_y = off_y + 1.0 / total_depth
+            plot_node(second_dict[key], (offset_x, offset_y), center_coordinate, leaf_node)
+            plot_mid_text((offset_x, offset_y), center_coordinate, str(key))
+    offset_y = offset_y + 1.0 / total_depth
 
 
 def create_plot(in_tree):
@@ -127,18 +126,18 @@ def create_plot(in_tree):
     # 声明全局变量,frameon表示是否绘制坐标轴矩形
     global ax1
     ax1 = plt.subplot(111, frameon=False, **axprops)
-    global total_width, total_depth, off_x, off_y
+    global total_width, total_depth, offset_x, offset_y
     total_width = get_num_leafs(in_tree)
     total_depth = get_tree_depth(in_tree)
-    off_x = -0.5 / total_width
-    off_y = 1.0
+    offset_x = -0.5 / total_width
+    offset_y = 1.0
     plot_tree(in_tree, (0.5, 1.0), '')
     plt.show()
 
 
 def retrieve_tree(i):
     """
-        准备的一些数据
+        准备测试数据
     :param i:
     :return:
     """
