@@ -18,8 +18,11 @@
         数值型和标称型
 """
 import operator
+import pickle
 from collections import Counter
 from math import log
+
+from tree_plotter import create_plot
 
 
 def create_data_set():
@@ -154,6 +157,35 @@ def majority_counter(class_list):
     return sorted_class_count[0][0]
 
 
+def classify(input_tree, feature_labels, test_vector):
+    first_str = list(input_tree.keys())[0]
+    second_dict = input_tree[first_str]
+    # 将标签字符串转换为索引
+    feature_index = feature_labels.index(first_str)
+    class_label = None
+    for key in second_dict.keys():
+        if test_vector[feature_index] == key:
+            if type(second_dict[key]).__name__ == 'dict':
+                class_label = classify(second_dict[key], feature_labels, test_vector)
+            else:
+                class_label = second_dict[key]
+    return class_label
+
+
+def store_tree(input_tree, filename):
+    with open(filename, 'wb') as fw:
+        # 0：ASCII协议，所序列化的对象使用可打印的ASCII码表示
+        # 1：老式的二进制协议
+        # 2：2.3版本引入的新二进制协议，较以前的更高效
+        # 其中协议0和1兼容老版本的python
+        pickle.dump(input_tree, fw, 0)
+
+
+def grab_tree(filename):
+    with open(filename, 'rb') as fr:
+        return pickle.load(fr)
+
+
 def create_tree(data_set, labels):
     # 获取类别列表
     class_list = [example[-1] for example in data_set]
@@ -170,7 +202,7 @@ def create_tree(data_set, labels):
     best_feature_label = labels[best_feature]
     # 创建字典,存储决策树
     my_tree = {best_feature_label: {}}
-    del(labels[best_feature])
+    del (labels[best_feature])
     # 获取该特征的所有的值
     feature_values = [example[best_feature] for example in data_set]
     unique_values = set(feature_values)
@@ -182,11 +214,25 @@ def create_tree(data_set, labels):
 
 
 if __name__ == '__main__':
-    my_data_set, my_labels = create_data_set()
-    print(my_data_set)
-    print(my_labels)
-    my_shannon_entropy = calc_shannon_entropy(my_data_set)
-    print(my_shannon_entropy)
-    print(calc_shannon_entropy2(my_data_set))
-    decision_tree = create_tree(my_data_set,my_labels)
-    print(decision_tree)
+    # my_data_set, my_labels = create_data_set()
+    # print(my_data_set)
+    # print(my_labels)
+    # my_shannon_entropy = calc_shannon_entropy(my_data_set)
+    # print(my_shannon_entropy)
+    # print(calc_shannon_entropy2(my_data_set))
+    # decision_tree = create_tree(my_data_set, my_labels)
+    # store_tree(decision_tree, 'resource/classifier_storage.txt')
+    # print(decision_tree)
+    # new_tree = grab_tree('resource/classifier_storage.txt')
+    # print('acquire tree from file:', new_tree)
+    # # 因为my_labels已经在create_tree方法中被改变,故我们生成个新的
+    # my_data_set, my_labels = create_data_set()
+    # print(classify(decision_tree, my_labels, [1, 1]))
+    with open('resource/lenses.txt') as fr:
+        lenses = [instance.strip().split('\t') for instance in fr.readlines()]
+        lenses_labels = ['age', 'prescript', 'astigmatic', 'tearRate']
+        lenses_tree = create_tree(lenses,lenses_labels)
+        print(lenses)
+        print(lenses_labels)
+        print(lenses_tree)
+        create_plot(lenses_tree)
