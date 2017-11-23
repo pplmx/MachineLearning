@@ -6,8 +6,10 @@
 import random
 import math
 
-
 # 生成[a,b)区间的随机数
+import pickle
+
+
 def rand(a, b):
     return (b - a) * random.random() + a
 
@@ -124,7 +126,9 @@ class BPNeuralNetwork:
                 label = labels[i]
                 case = cases[i]
                 error += self.back_propagation(case, label, learn, correct)
+        # 返回训练好的权重、动量因子等信息，便于BP网络的保存
         return dict(input_node=self.input_node, hidden_node=self.hidden_node, output_node=self.output_node,
+                    input_cells=self.input_cells, hidden_cells=self.hidden_cells, output_cells=self.output_cells,
                     input_weights=self.input_weights, output_weights=self.output_weights,
                     input_correction=self.input_correction, output_correction=self.output_correction)
 
@@ -154,13 +158,35 @@ class BPNeuralNetwork:
         labels = [[0.257], [0.473], [0.261], [0.561], [0.201], [0.681], [0.697], [0.733], [0.375], [0.583]]
         self.setup(21, 4, 1)
         self.train(cases, labels, 1000000, 0.1, 0.1)
+        # 保存网络
+        # save_net = self.train(cases, labels, 1000000, 0.1, 0.1)
+        # with open('resource/bp_net.txt', 'wb') as fw:
+        #     pickle.dump(save_net, fw, 0)
         for case in cases:
             print(self.predict(case))
             # print(self.predict(
-            #     [1, 1, 1, 0.75, 0.833, 0.688, 0.858, 0.63, 0.859, 0, 0.322, 0.875, 1, 0, 1, 1, 0.5, 0.834, 0.376, 0.233,
-            #      1]))
+            #     [1, 1, 1, 0.75, 0.833, 0.688, 0.858, 0.63, 0.859, 0, 0.322, 0.875,
+            # 1, 0, 1, 1, 0.5, 0.834, 0.376, 0.233,1]))
 
 
 if __name__ == '__main__':
     nn = BPNeuralNetwork()
-    nn.test()
+    # nn.test()
+    # 加载网络
+    trained_net = None
+    with open('resource/bp_net.txt', 'rb') as fr:
+        trained_net = pickle.load(fr)
+    nn.input_node = trained_net['input_node']
+    nn.hidden_node = trained_net['hidden_node']
+    nn.output_node = trained_net['output_node']
+    nn.input_cells = trained_net['input_cells']
+    nn.hidden_cells = trained_net['hidden_cells']
+    nn.output_cells = trained_net['output_cells']
+    nn.input_weights = trained_net['input_weights']
+    nn.output_weights = trained_net['output_weights']
+    nn.input_correction = trained_net['input_correction']
+    nn.output_correction = trained_net['output_correction']
+    predict_value = nn.predict(
+        [1, 1, 0, 0.231, 0.321, 0.43, 0.42, 0.21, 0.56, 0.21, 0.661, 1, 0, 0.231, 0.321, 0.43, 0.42, 0.21,
+         0.56, 0.21, 0.668])
+    print(predict_value)

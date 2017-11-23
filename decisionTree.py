@@ -182,8 +182,8 @@ def store_tree(input_tree, filename):
 
 
 def grab_tree(filename):
-    with open(filename, 'rb') as fr:
-        return pickle.load(fr)
+    with open(filename, 'rb') as read:
+        return pickle.load(read)
 
 
 def create_tree(data_set, labels):
@@ -231,7 +231,7 @@ if __name__ == '__main__':
     with open('resource/lenses.txt') as fr:
         lenses = [instance.strip().split('\t') for instance in fr.readlines()]
         lenses_labels = ['age', 'prescript', 'astigmatic', 'tearRate']
-        lenses_tree = create_tree(lenses,lenses_labels)
+        lenses_tree = create_tree(lenses, lenses_labels)
         print(lenses)
         print(lenses_labels)
         print(lenses_tree)
