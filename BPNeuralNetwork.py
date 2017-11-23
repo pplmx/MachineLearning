@@ -124,6 +124,9 @@ class BPNeuralNetwork:
                 label = labels[i]
                 case = cases[i]
                 error += self.back_propagation(case, label, learn, correct)
+        return dict(input_node=self.input_node, hidden_node=self.hidden_node, output_node=self.output_node,
+                    input_weights=self.input_weights, output_weights=self.output_weights,
+                    input_correction=self.input_correction, output_correction=self.output_correction)
 
     def test(self):
         cases = [
@@ -153,9 +156,9 @@ class BPNeuralNetwork:
         self.train(cases, labels, 1000000, 0.1, 0.1)
         for case in cases:
             print(self.predict(case))
-        # print(self.predict(
-        #     [1, 1, 1, 0.75, 0.833, 0.688, 0.858, 0.63, 0.859, 0, 0.322, 0.875, 1, 0, 1, 1, 0.5, 0.834, 0.376, 0.233,
-        #      1]))
+            # print(self.predict(
+            #     [1, 1, 1, 0.75, 0.833, 0.688, 0.858, 0.63, 0.859, 0, 0.322, 0.875, 1, 0, 1, 1, 0.5, 0.834, 0.376, 0.233,
+            #      1]))
 
 
 if __name__ == '__main__':
