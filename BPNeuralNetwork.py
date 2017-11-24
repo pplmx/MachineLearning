@@ -3,32 +3,51 @@
 # Created by PyCharm
 # @author  : mystic
 # @date    : 2017/11/23 8:41
-import random
+import datetime
 import math
-
-# 生成[a,b)区间的随机数
 import pickle
+import random
 
 
 def rand(a, b):
+    """
+        生成[a,b)区间内的随机数
+    :param a:
+    :param b:
+    :return:
+    """
     return (b - a) * random.random() + a
 
 
-# 生成m*n的矩阵,默认为零矩阵
 def make_matrix(m, n, fill=0.):
+    """
+        生成m*n的矩阵,默认是零矩阵
+    :param m:
+    :param n:
+    :param fill:
+    :return:
+    """
     matrix = []
     for i in range(m):
         matrix.append([fill] * n)
     return matrix
 
 
-# S型函数:Log-sigmoid和Tan-sigmoid[这里采用Log-sigmoid]
 def sigmoid(x):
+    """
+        S型函数:Log-sigmoid和Tan-sigmoid[这里采用Log-sigmoid]
+    :param x:
+    :return:
+    """
     return 1.0 / (1.0 + math.exp(-x))
 
 
-# S型函数的导数
 def sigmoid_derivative(x):
+    """
+        S型函数Log-sigmoid的导数
+    :param x:
+    :return:
+    """
     return x * (1 - x)
 
 
@@ -54,7 +73,7 @@ class BPNeuralNetwork:
         self.input_cells = [1.0] * self.input_node
         self.hidden_cells = [1.0] * self.hidden_node
         self.output_cells = [1.0] * self.output_node
-        # init weights 建立权重
+        # init weights 建立输入层到隐含层权重和隐含层到输出层的权重
         self.input_weights = make_matrix(self.input_node, self.hidden_node)
         self.output_weights = make_matrix(self.hidden_node, self.output_node)
         # random activate
@@ -87,6 +106,14 @@ class BPNeuralNetwork:
         return self.output_cells[:]
 
     def back_propagation(self, case, label, learn, correct):
+        """
+            反向传播
+        :param case: 样本
+        :param label: 期望样本输出值
+        :param learn: 学习速率
+        :param correct: 动量因子
+        :return:
+        """
         # feed forward
         self.predict(case)
         # get output layer error
@@ -157,9 +184,11 @@ class BPNeuralNetwork:
         ]
         labels = [[0.257], [0.473], [0.261], [0.561], [0.201], [0.681], [0.697], [0.733], [0.375], [0.583]]
         self.setup(21, 4, 1)
-        self.train(cases, labels, 1000000, 0.1, 0.1)
+        begin = datetime.datetime.now()
+        save_net = self.train(cases, labels, 1000000, 0.1, 0.1)
+        end = datetime.datetime.now()
+        print('spend:', (end - begin))
         # 保存网络
-        # save_net = self.train(cases, labels, 1000000, 0.1, 0.1)
         # with open('resource/bp_net.txt', 'wb') as fw:
         #     pickle.dump(save_net, fw, 0)
         for case in cases:
