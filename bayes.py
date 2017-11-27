@@ -12,3 +12,33 @@
     适用数据类型:
         标称型数据
 """
+
+
+def load_data_set():
+    posting_list = [['my', 'dog', 'has', 'flea', 'problems', 'help', 'please'],
+                    ['maybe', 'not', 'take', 'him', 'to', 'dog', 'park', 'stupid'],
+                    ['my', 'dalmation', 'is', 'so', 'cute', 'I', 'love', 'him'],
+                    ['stop', 'posting', 'stupid', 'worthless', 'garbage'],
+                    ['mr', 'licks', 'ate', 'my', 'steak', 'how', 'to', 'stop', 'him'],
+                    ['quit', 'buying', 'worthless', 'dog', 'food', 'stupid']]
+    class_vector = [0, 1, 0, 1, 0, 1]  # 1 is abusive, 0 not
+    return posting_list, class_vector
+
+
+def create_vocabulary_list(data_set):
+    # 创建一个空集
+    vocabulary_set = set([])
+    for document in data_set:
+        # 创建两个集合的并集
+        vocabulary_set = vocabulary_set | set(document)
+    return list(vocabulary_set)
+
+
+def set_words2vector(vocabulary_list, input_set):
+    return_vector = [0]*len(vocabulary_list)
+    for word in input_set:
+        if word in vocabulary_list:
+            return_vector[vocabulary_list.index(word)] = 1
+        else:
+            print('The word "%s" is not in my vocabulary!' % word)
+    return return_vector
