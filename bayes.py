@@ -42,3 +42,11 @@ def set_words2vector(vocabulary_list, input_set):
         else:
             print('The word "%s" is not in my vocabulary!' % word)
     return return_vector
+
+
+if __name__ == '__main__':
+    list_post, list_class = load_data_set()
+    my_vocabulary_list = create_vocabulary_list(list_post)
+    print(my_vocabulary_list)
+    vec = set_words2vector(my_vocabulary_list, list_post[0])
+    print(vec)
