@@ -108,3 +108,5 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+/resource/bp_net.txt
+/resource/classifier_storage.txt
