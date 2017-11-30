@@ -12,6 +12,7 @@
     适用数据类型:
         标称型数据
 """
+from numpy import *
 
 
 def load_data_set():
@@ -42,6 +43,16 @@ def set_words2vector(vocabulary_list, input_set):
         else:
             print('The word "%s" is not in my vocabulary!' % word)
     return return_vector
+
+
+def train_naive_bayes(train_matrix, train_category):
+    num_train_docs = len(train_matrix)
+    num_words = len(train_matrix[0])
+    probability_abusive = sum(train_category)/num_train_docs
+    p0_num = zeros(num_words)
+    p1_num = zeros(num_words)
+    p0_denominator = 0.0
+    p1_denominator = 0.0
 
 
 if __name__ == '__main__':
