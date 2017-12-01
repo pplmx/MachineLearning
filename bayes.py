@@ -53,6 +53,16 @@ def train_naive_bayes(train_matrix, train_category):
     p1_num = zeros(num_words)
     p0_denominator = 0.0
     p1_denominator = 0.0
+    for i in range(num_train_docs):
+        if train_category[i] == 1:
+            p1_num += train_matrix[i]
+            p1_denominator += sum(train_matrix[i])
+        else:
+            p0_num += train_matrix[i]
+            p0_denominator += sum(train_matrix[i])
+    p1_vector = p1_num/p1_denominator
+    p0_vector = p0_num/p0_denominator
+    return p0_vector, p1_vector, probability_abusive
 
 
 if __name__ == '__main__':
