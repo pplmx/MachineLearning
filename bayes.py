@@ -128,17 +128,20 @@ def spam_test():
     doc_list = []
     class_list = []
     full_text = []
+    # 遍历的文件名是1-25
     for i in range(1, 26):
-        word_list = text_parse(open('resource/email/spam/%d.txt' % i).read())
+        # 读取spam文件,忽略编码解析错误的字符
+        word_list = text_parse(open('resource/email/spam/%d.txt' % i, errors='ignore').read())
         doc_list.append(word_list)
         full_text.append(word_list)
         class_list.append(1)
-        word_list = text_parse(open('resource/email/ham/%d.txt' % i).read())
+        word_list = text_parse(open('resource/email/ham/%d.txt' % i, errors='ignore').read())
         doc_list.append(word_list)
         full_text.append(word_list)
         class_list.append(0)
     vocabulary_list = create_vocabulary_list(doc_list)
-    train_set = range(50)
+    # 因为python3的range()返回的是range对象,故需要list()转换
+    train_set = list(range(50))
     test_set = []
     for i in range(10):
         random_index = int(random.uniform(0, len(train_set)))
@@ -178,3 +181,4 @@ if __name__ == '__main__':
     # test_entry = ['stupid', 'garbage']
     this_doc = set_words2vector(my_vocabulary_list, test_entry)
     print(test_entry, 'classified as: ', classify_naive_bayes(this_doc, p0_vec, p1_vec, p_abusive))
+    spam_test()
