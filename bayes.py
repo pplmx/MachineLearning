@@ -181,4 +181,5 @@ if __name__ == '__main__':
     # test_entry = ['stupid', 'garbage']
     this_doc = set_words2vector(my_vocabulary_list, test_entry)
     print(test_entry, 'classified as: ', classify_naive_bayes(this_doc, p0_vec, p1_vec, p_abusive))
+
     spam_test()
