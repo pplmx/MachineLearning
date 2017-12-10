@@ -139,7 +139,6 @@ def spam_test():
         doc_list.append(word_list)
         full_text.append(word_list)
         class_list.append(0)
-        print(doc_list)
     vocabulary_list = create_vocabulary_list(doc_list)
     # 因为python3的range()返回的是range对象,故需要list()转换
     train_set = list(range(50))
@@ -157,6 +156,7 @@ def spam_test():
         train_matrix.append(set_words2vector(vocabulary_list, doc_list[doc_idx]))
         train_classes.append(class_list[doc_idx])
     p0_vector, p1_vector, p_spam = train_naive_bayes(train_matrix, train_classes)
+    # 进行测试
     error_count = 0
     for doc_idx in test_set:
         word_vector = set_words2vector(vocabulary_list, doc_list[doc_idx])
@@ -185,4 +185,5 @@ if __name__ == '__main__':
     # test_entry = ['stupid', 'garbage']
     this_doc = set_words2vector(my_vocabulary_list, test_entry)
     print(test_entry, 'classified as: ', classify_naive_bayes(this_doc, p0_vec, p1_vec, p_abusive))
+    # 测试邮件是否为垃圾邮件
     spam_test()
