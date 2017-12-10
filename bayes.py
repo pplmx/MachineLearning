@@ -14,6 +14,8 @@
 """
 import re
 
+import operator
+import feedparser
 from numpy import *
 
 
@@ -125,6 +127,10 @@ def text_parse(big_str):
 
 
 def spam_test():
+    """
+        垃圾邮件分类测试
+    :return:
+    """
     doc_list = []
     class_list = []
     full_text = []
@@ -133,11 +139,11 @@ def spam_test():
         # 读取spam文件,忽略编码解析错误的字符
         word_list = text_parse(open('resource/email/spam/%d.txt' % i, errors='ignore').read())
         doc_list.append(word_list)
-        full_text.append(word_list)
+        full_text.extend(word_list)
         class_list.append(1)
         word_list = text_parse(open('resource/email/ham/%d.txt' % i, errors='ignore').read())
         doc_list.append(word_list)
-        full_text.append(word_list)
+        full_text.extend(word_list)
         class_list.append(0)
     vocabulary_list = create_vocabulary_list(doc_list)
     # 因为python3的range()返回的是range对象,故需要list()转换
@@ -148,7 +154,7 @@ def spam_test():
     for i in range(10):
         random_index = int(random.uniform(0, len(train_set)))
         test_set.append(train_set[random_index])
-        del(train_set[random_index])
+        del (train_set[random_index])
     train_matrix = []
     train_classes = []
     # 进行训练
@@ -162,7 +168,56 @@ def spam_test():
         word_vector = set_words2vector(vocabulary_list, doc_list[doc_idx])
         if classify_naive_bayes(word_vector, p0_vector, p1_vector, p_spam) != class_list[doc_idx]:
             error_count += 1
-    print('The error rate is ', error_count/len(test_set))
+    print('The error rate is ', error_count / len(test_set))
+
+
+def calc_most_frequency(vocabulary_list, full_text):
+    frequency_dict = {}
+    for token in vocabulary_list:
+        frequency_dict[token] = full_text.count(token)
+    sorted_frequency = sorted(frequency_dict.items(),
+                              key=operator.itemgetter(1), reverse=True)
+    return sorted_frequency[:30]
+
+
+def local_words(feed1, feed0):
+    doc_list = []
+    class_list = []
+    full_text = []
+    min_len = min(len(feed1['entries']), len(feed0['entries']))
+    for i in range(min_len):
+        word_list = text_parse(feed1['entries'][i]['summary'])
+        doc_list.append(word_list)
+        full_text.extend(word_list)
+        class_list.append(1)
+        word_list = text_parse(feed0['entries'][i]['summary'])
+        doc_list.append(word_list)
+        full_text.extend(word_list)
+        class_list.append(0)
+    vocabulary_list = create_vocabulary_list(doc_list)
+    top30_words = calc_most_frequency(vocabulary_list, full_text)
+    for pair in top30_words:
+        if pair[0] in vocabulary_list:
+            vocabulary_list.remove(pair[0])
+    train_set = list(range(2 * min_len))
+    test_set = []
+    for i in range(5):
+        random_idx = int(random.uniform(0, len(train_set)))
+        test_set.append(train_set[random_idx])
+        del (train_set[random_idx])
+    train_matrix = []
+    train_classes = []
+    for doc_idx in train_set:
+        train_matrix.append(bag_words2vector(vocabulary_list, doc_list[doc_idx]))
+        train_classes.append(class_list[doc_idx])
+    p0_vector, p1_vector, p_spam = train_naive_bayes(train_matrix, train_classes)
+    error_count = 0
+    for doc_idx in test_set:
+        word_vector = bag_words2vector(vocabulary_list, doc_list[doc_idx])
+        if classify_naive_bayes(word_vector, p0_vector, p1_vector, p_spam) != class_list[doc_idx]:
+            error_count += 1
+    print('The error rate is ', error_count / len(test_set))
+    return vocabulary_list, p0_vector, p1_vector
 
 
 if __name__ == '__main__':
@@ -184,6 +239,9 @@ if __name__ == '__main__':
     test_entry = ['love', 'my', 'dalmation']
     # test_entry = ['stupid', 'garbage']
     this_doc = set_words2vector(my_vocabulary_list, test_entry)
-    print(test_entry, 'classified as: ', classify_naive_bayes(this_doc, p0_vec, p1_vec, p_abusive))
+    # print(test_entry, 'classified as: ', classify_naive_bayes(this_doc, p0_vec, p1_vec, p_abusive))
     # 测试邮件是否为垃圾邮件
-    spam_test()
+    # spam_test()
+    ny = feedparser.parse('https://newyork.craigslist.org/search/stp?format=rss')
+    sf = feedparser.parse('https://sfbay.craigslist.org/search/stp?format=rss')
+    vocab_list, p_sf, p_ny = local_words(ny, sf)
