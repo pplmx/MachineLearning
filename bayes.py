@@ -245,3 +245,4 @@ if __name__ == '__main__':
     ny = feedparser.parse('https://newyork.craigslist.org/search/stp?format=rss')
     sf = feedparser.parse('https://sfbay.craigslist.org/search/stp?format=rss')
     vocab_list, p_sf, p_ny = local_words(ny, sf)
+    # test
