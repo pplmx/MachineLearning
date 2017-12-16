@@ -109,8 +109,8 @@ def classify_naive_bayes(vector2classify, p0_vector, p1_vector, p_class1):
     """
         朴素的贝叶斯分类器
     :param vector2classify: 用于分类的向量
-    :param p0_vector: not abusive的概率
-    :param p1_vector: abusive的概率
+    :param p0_vector:
+    :param p1_vector:
     :param p_class1:
     :return:
     """
