@@ -172,6 +172,12 @@ def spam_test():
 
 
 def calc_most_frequency(vocabulary_list, full_text):
+    """
+        取频次最高的前三十个
+    :param vocabulary_list:
+    :param full_text:
+    :return:
+    """
     frequency_dict = {}
     for token in vocabulary_list:
         frequency_dict[token] = full_text.count(token)
