@@ -35,20 +35,31 @@ def make_matrix(m, n, fill=0.):
 
 def sigmoid(x):
     """
-        S型函数:Log-sigmoid和Tan-sigmoid[这里采用Log-sigmoid]
+        S型函数:
+            Log-sigmoid和Tan-sigmoid [这里采用Tan-sigmoid]
+            S型函数,数据在传递过程中不易发散,可以轻易的将非线性引入到网络中.
+            S型函数存在的问题:
+                1.饱和时梯度消失
+                    当输入值很大或很小的时候,梯度几乎为0,即梯度消失.
+                    而对于BP神经网络而言,如果梯度过小的话,则会导致权值的修改量很小或者几乎为0,从而导致整个网络难以学习.
+                2.Log-sigmoid存在输出值不是零均值化的问题
+                    (Tanh值域为(-1,1),故不存在该问题)
+                    导致下一层神经元将本层非零均值化的输出信号作为输入.
+                    试想一下如果数据输入神经元是恒正的,那么所得出的梯度也会是恒正的数,产生锯齿现象而导致收敛速度变慢.
+            Tan-sigmoid is a little nicer than the Log-sigmoid 1/(1+e^-x)
     :param x:
     :return:
     """
-    return 1.0 / (1.0 + math.exp(-x))
+    return math.tanh(x)
 
 
-def sigmoid_derivative(x):
+def sigmoid_derivative(y):
     """
-        S型函数Log-sigmoid的导数
-    :param x:
+        S型函数Tan-sigmoid的导数
+    :param y:
     :return:
     """
-    return x * (1 - x)
+    return 1 - y ** 2
 
 
 class BPNeuralNetwork:
@@ -193,9 +204,6 @@ class BPNeuralNetwork:
         #     pickle.dump(save_net, fw, 0)
         for case in cases:
             print(self.predict(case))
-            # print(self.predict(
-            #     [1, 1, 1, 0.75, 0.833, 0.688, 0.858, 0.63, 0.859, 0, 0.322, 0.875,
-            # 1, 0, 1, 1, 0.5, 0.834, 0.376, 0.233,1]))
 
 
 if __name__ == '__main__':
