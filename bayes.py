@@ -78,7 +78,7 @@ def train_naive_bayes(train_matrix, train_category):
     num_words = len(train_matrix[0])
     # print(num_words)
     # 因为1表示abusive,所有求和,表示abusive的总数
-    probability_abusive = sum(train_category) / num_train_docs
+    probability_class1 = sum(train_category) / num_train_docs
     # 统计单词出现的频率,为避免乘数为0,初始化使用ones
     p0_num = ones(num_words)
     p1_num = ones(num_words)
@@ -102,7 +102,7 @@ def train_naive_bayes(train_matrix, train_category):
     # 为避免下溢出(很多很小的数相乘,程序可能会返回0),取对数
     p1_vector = log(p1_num / p1_denominator)
     p0_vector = log(p0_num / p0_denominator)
-    return p0_vector, p1_vector, probability_abusive
+    return p0_vector, p1_vector, probability_class1
 
 
 def classify_naive_bayes(vector2classify, p0_vector, p1_vector, p_class1):
@@ -202,10 +202,12 @@ def local_words(feed1, feed0):
         class_list.append(0)
     vocabulary_list = create_vocabulary_list(doc_list)
     top30_words = calc_most_frequency(vocabulary_list, full_text)
+    # 去除词汇表中最频繁的30个词
     for pair in top30_words:
         if pair[0] in vocabulary_list:
             vocabulary_list.remove(pair[0])
     train_set = list(range(2 * min_len))
+    # 从训练集中随机取出5个,用于测试数据(这里是通过将训练集合中,随机5个索引删去,并同时添加进测试集合中)
     test_set = []
     for i in range(5):
         random_idx = int(random.uniform(0, len(train_set)))
@@ -216,10 +218,13 @@ def local_words(feed1, feed0):
     for doc_idx in train_set:
         train_matrix.append(bag_words2vector(vocabulary_list, doc_list[doc_idx]))
         train_classes.append(class_list[doc_idx])
+    # 通过朴素的贝叶斯训练
     p0_vector, p1_vector, p_spam = train_naive_bayes(train_matrix, train_classes)
     error_count = 0
+    # 对训练好的模型进行测试
     for doc_idx in test_set:
         word_vector = bag_words2vector(vocabulary_list, doc_list[doc_idx])
+        # 比较模型的结果与实际结果
         if classify_naive_bayes(word_vector, p0_vector, p1_vector, p_spam) != class_list[doc_idx]:
             error_count += 1
     print('The error rate is ', error_count / len(test_set))
@@ -251,4 +256,3 @@ if __name__ == '__main__':
     ny = feedparser.parse('https://newyork.craigslist.org/search/stp?format=rss')
     sf = feedparser.parse('https://sfbay.craigslist.org/search/stp?format=rss')
     vocab_list, p_sf, p_ny = local_words(ny, sf)
-    # test
