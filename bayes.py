@@ -14,7 +14,6 @@
 """
 import re
 
-import operator
 import feedparser
 from numpy import *
 
@@ -182,7 +181,7 @@ def calc_most_frequency(vocabulary_list, full_text):
     for token in vocabulary_list:
         frequency_dict[token] = full_text.count(token)
     sorted_frequency = sorted(frequency_dict.items(),
-                              key=operator.itemgetter(1), reverse=True)
+                              key=lambda obj: obj[1], reverse=True)
     return sorted_frequency[:30]
 
 
@@ -231,6 +230,31 @@ def local_words(feed1, feed0):
     return vocabulary_list, p0_vector, p1_vector
 
 
+def get_top_words(feed1, feed0):
+    """
+        使用两个RSS作为输入,获取最具表征性的词汇
+    :param feed1: RSS输入源1
+    :param feed0: RSS输入源0
+    :return:
+    """
+    vocab, p0_v, p1_v = local_words(feed1, feed0)
+    top_1 = []
+    top_0 = []
+    for i in range(len(p0_v)):
+        if p0_v[i] > -6.0:
+            top_0.append((vocab[i], p0_v[i]))
+        if p1_v[i] > -6.0:
+            top_1.append((vocab[i], p1_v[i]))
+    sorted_0 = sorted(top_0, key=lambda obj: obj[1], reverse=True)
+    print('00000000000000000000000000000000000000')
+    for item in sorted_0:
+        print(item[0])
+    sorted_1 = sorted(top_1, key=lambda obj: obj[1], reverse=True)
+    print('11111111111111111111111111111111111111')
+    for item in sorted_1:
+        print(item[0])
+
+
 if __name__ == '__main__':
     list_post, list_class = load_data_set()
     my_vocabulary_list = create_vocabulary_list(list_post)
@@ -255,4 +279,4 @@ if __name__ == '__main__':
     # spam_test()
     ny = feedparser.parse('https://newyork.craigslist.org/search/stp?format=rss')
     sf = feedparser.parse('https://sfbay.craigslist.org/search/stp?format=rss')
-    vocab_list, p_sf, p_ny = local_words(ny, sf)
+    get_top_words(ny, sf)

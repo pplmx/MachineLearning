@@ -16,10 +16,10 @@
         数值型和标称型
 """
 
-from numpy import *
-import operator
-import matplotlib.pyplot as plt
 from os import listdir
+
+import matplotlib.pyplot as plt
+from numpy import *
 
 
 def create_data_set():
@@ -59,7 +59,7 @@ def classify(in_x, data_set, labels, k):
     # 根据字典class_count的value进行降序排列
     # 在最近点案例中,value都是1,下面的排序等于没做
     sorted_class_count = sorted(class_count.items(),
-                                key=operator.itemgetter(1), reverse=True)
+                                key=lambda obj: obj[1], reverse=True)
     # print(sorted_class_count)
     return sorted_class_count[0][0]
 
