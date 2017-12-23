@@ -277,6 +277,8 @@ if __name__ == '__main__':
     # print(test_entry, 'classified as: ', classify_naive_bayes(this_doc, p0_vec, p1_vec, p_abusive))
     # 测试邮件是否为垃圾邮件
     # spam_test()
+    # NewYork
     ny = feedparser.parse('https://newyork.craigslist.org/search/stp?format=rss')
+    # San Francisco Bay
     sf = feedparser.parse('https://sfbay.craigslist.org/search/stp?format=rss')
     get_top_words(ny, sf)
