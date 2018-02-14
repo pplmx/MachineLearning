@@ -44,11 +44,11 @@ def classify(in_x, data_set, labels, k):
     # 平方
     sq_diff_arr = diff_arr ** 2
     # 求平方和
-    sq_distinces = sq_diff_arr.sum(axis=1)
+    sq_distances = sq_diff_arr.sum(axis=1)
     # 开根,得各点与输入向量的距离值集合
-    distinces = sq_distinces ** 0.5
+    distances = sq_distances ** 0.5
     # 排序,升序(返回结果为索引,如[17,23,1,0],排序后返回[3,2,0,1])
-    sorted_dist_indices = distinces.argsort()
+    sorted_dist_indices = distances.argsort()
     # print('最近的点:%s' % labels[sorted_dist_indices[0]])
     # 存储最近的k个点
     class_count = {}
