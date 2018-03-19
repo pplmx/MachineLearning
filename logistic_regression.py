@@ -86,6 +86,50 @@ def improved_stochastic_gradient_ascent(data_list, class_label_list, iterator_ti
     return weight_arr
 
 
+def classify_vector(input_x, weight_arr):
+    probability = sigmoid(sum(input_x * weight_arr))
+    if probability > 0.5:
+        return 1.0
+    else:
+        return 0.0
+
+
+def colic_test():
+    fr_train = open('resource/horseColicTraining.txt')
+    fr_test = open('resource/horseColicTest.txt')
+    training_set = []
+    training_labels = []
+    for line in fr_train.readlines():
+        curr_line = line.strip().split('\t')
+        line_arr = []
+        for i in range(21):
+            line_arr.append(float(curr_line[i]))
+        training_set.append(line_arr)
+        training_labels.append(float(curr_line[21]))
+    train_weight_arr = improved_stochastic_gradient_ascent(array(training_set), training_labels, 500)
+    error_count = 0
+    num_test_vec = 0.0
+    for line in fr_test.readlines():
+        num_test_vec += 1.0
+        curr_line = line.strip().split('\t')
+        line_arr = []
+        for i in range(21):
+            line_arr.append(float(curr_line[i]))
+        if int(classify_vector(array(line_arr), train_weight_arr)) != int(curr_line[21]):
+            error_count += 1
+    error_rate = error_count / num_test_vec
+    print('The error rate of this test is: %f' % error_rate)
+    return error_rate
+
+
+def multi_test():
+    num_tests = 10
+    error_sum = 0.0
+    for k in range(num_tests):
+        error_sum += colic_test()
+    print('after %d iterations the average error rate is: %f' % (num_tests, error_sum / num_tests))
+
+
 def plot_best_fit(weight_arr):
     import matplotlib.pyplot as plt
     data_list, class_label_list = load_data_set()
@@ -122,5 +166,6 @@ if __name__ == '__main__':
     # 随机梯度上升
     # weights = stochastic_gradient_ascent(result[0], result[1])
     # 改进的随机梯度上升
-    weights = improved_stochastic_gradient_ascent(result[0], result[1])
-    plot_best_fit(weights)
+    # weights = improved_stochastic_gradient_ascent(result[0], result[1])
+    # plot_best_fit(weights)
+    multi_test()
