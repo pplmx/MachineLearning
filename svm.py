@@ -36,6 +36,12 @@ def load_data_set(file_name):
 
 
 def select_j_rand(i, m):
+    """
+        we want to select any J not equal to i
+    :param i:
+    :param m:
+    :return:
+    """
     j = i
     while j == i:
         j = int(random.uniform(0, m))
@@ -111,14 +117,18 @@ def simple_smo(data_list, class_label_list, constant, tolerate, max_loop):
                     b = (b1 + b2) / 2.0
                 alpha_pairs_changed += 1
                 print('loop: %d, i: %d, pairs changed: %d' % (loop, i, alpha_pairs_changed))
-            if alpha_pairs_changed == 0:
-                loop += 1
-            else:
-                loop = 0
-            print('loop number: %d' % loop)
-        return b, alpha_mat
+        if alpha_pairs_changed == 0:
+            loop += 1
+        else:
+            loop = 0
+        print('loop number: %d' % loop)
+    return b, alpha_mat
 
 
 if __name__ == "__main__":
     data_arr, label_arr = load_data_set('resource/testSet1.txt')
-    simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
+    bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
+    print(bb)
+    print(alphas[alphas > 0])
+    print(shape(alphas[alphas > 0]))
+
