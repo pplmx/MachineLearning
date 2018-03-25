@@ -21,7 +21,7 @@
         [6]使用算法: 几乎所有分类问题都可以使用SVM,值得一提的是,SVM本身是一个二类分类器
                     对多类问题应用,SVM需要对代码做一些修改
 """
-from numpy import random, mat, shape, zeros, multiply
+from numpy import random, mat, shape, zeros, multiply, nonzero
 
 
 def load_data_set(file_name):
@@ -76,13 +76,13 @@ def simple_smo(data_list, class_label_list, constant, tolerate, max_loop):
         alpha_pairs_changed = 0
         for i in range(m):
             f_x_i = float(multiply(alpha_mat, label_mat).T * (data_mat * data_mat[i, :].T)) + b
-            e_i = f_x_i - float(label_mat[i])
-            is_okay = ((label_mat[i] * e_i < -tolerate) and (alpha_mat[i] < constant)) or \
-                      ((label_mat[i] * e_i > tolerate) and (alpha_mat[i] > 0))
+            err_i = f_x_i - float(label_mat[i])
+            is_okay = ((label_mat[i] * err_i < -tolerate) and (alpha_mat[i] < constant)) or \
+                      ((label_mat[i] * err_i > tolerate) and (alpha_mat[i] > 0))
             if is_okay:
                 j = select_j_rand(i, m)
                 f_x_j = float(multiply(alpha_mat, label_mat).T * (data_mat * data_mat[j, :].T)) + b
-                e_j = f_x_j - float(label_mat[j])
+                err_j = f_x_j - float(label_mat[j])
                 alpha_i_old = alpha_mat[i].copy()
                 alpha_j_old = alpha_mat[j].copy()
                 if label_mat[i] != label_mat[j]:
@@ -99,15 +99,15 @@ def simple_smo(data_list, class_label_list, constant, tolerate, max_loop):
                 if eta >= 0:
                     print('eta >= 0')
                     continue
-                alpha_mat[j] -= label_mat[j] * (e_i - e_j) / eta
+                alpha_mat[j] -= label_mat[j] * (err_i - err_j) / eta
                 alpha_mat[j] = clip_alpha(alpha_mat[j], high, low)
                 if (abs(alpha_mat[j]) - alpha_j_old) < 0.00001:
                     print('j not moving enough')
                     continue
                 alpha_mat[i] += label_mat[j] * label_mat[i] * (alpha_j_old - alpha_mat[j])
-                b1 = b - e_i - label_mat[i] * (alpha_mat[i] - alpha_i_old) * data_mat[i, :] * data_mat[i, :].T - \
+                b1 = b - err_i - label_mat[i] * (alpha_mat[i] - alpha_i_old) * data_mat[i, :] * data_mat[i, :].T - \
                      label_mat[j] * (alpha_mat[j] - alpha_j_old) * data_mat[i, :] * data_mat[j, :].T
-                b2 = b - e_j - label_mat[i] * (alpha_mat[i] - alpha_i_old) * data_mat[i, :] * data_mat[j, :].T - \
+                b2 = b - err_j - label_mat[i] * (alpha_mat[i] - alpha_i_old) * data_mat[i, :] * data_mat[j, :].T - \
                      label_mat[j] * (alpha_mat[j] - alpha_j_old) * data_mat[j, :] * data_mat[j, :].T
                 if (0 < alpha_mat[i]) and (constant > alpha_mat[i]):
                     b = b1
@@ -125,10 +125,105 @@ def simple_smo(data_list, class_label_list, constant, tolerate, max_loop):
     return b, alpha_mat
 
 
+class OptStruct:
+    def __init__(self, input_data_list, class_label_list, constant, tolerate):
+        self.X = input_data_list
+        self.label_list = class_label_list
+        self.C = constant
+        self.tol = tolerate
+        self.m = shape(input_data_list)[0]
+        self.alpha_mat = mat(zeros((self.m, 1)))
+        self.b = 0
+        self.err_cache = mat(zeros((self.m, 2)))
+
+
+def calc_err_k(o_s, k):
+    f_x_k = float(multiply(o_s.alpha_mat, o_s.label_list).T
+                  * (o_s.X * o_s.X[k, :].T)) + o_s.label_list
+    err_k = f_x_k - float(o_s.label_list[k])
+    return err_k
+
+
+def select_j(i, o_s, err_i):
+    max_k = -1
+    max_delta_err = 0
+    err_j = 0
+    o_s.err_cache[i] = [1, err_i]
+    valid_err_cache_list = nonzero(o_s.err_cache[:, 0].A)[0]
+    if len(valid_err_cache_list) > 1:
+        for k in valid_err_cache_list:
+            if k == i:
+                continue
+            err_k = calc_err_k(o_s, k)
+            delta_err = abs(err_i - err_k)
+            if delta_err > max_delta_err:
+                max_k = k
+                max_delta_err = delta_err
+                err_j = err_k
+        return max_k, err_j
+    else:
+        j = select_j_rand(i, o_s.m)
+        err_j = calc_err_k(o_s, j)
+    return j, err_j
+
+
+def update_err_k(o_s, k):
+    err_k = calc_err_k(o_s, k)
+    o_s.err_cache[k] = [1, err_k]
+
+
+def inner_l(i, o_s):
+    err_i = calc_err_k(o_s, i)
+    is_okay = ((o_s.label_list[i] * err_i < -o_s.tol) and (o_s.alpha_mat[i] < o_s.C)) or \
+              ((o_s.label_list[i] * err_i > o_s.tol) and (o_s.alpha_mat[i] > 0))
+    if is_okay:
+        j, err_j = select_j(i, o_s, err_i)
+        alpha_i_old = o_s.alpha_mat[i].copy()
+        alpha_j_old = o_s.alpha_mat[j].copy()
+        if o_s.label_list[i] != o_s.label_list[j]:
+            low = max(0, o_s.alpha_mat[j] - o_s.alpha_mat[i])
+            high = min(o_s.C, o_s.C + o_s.alpha_mat[j] - o_s.alpha_mat[i])
+        else:
+            low = max(0, o_s.alpha_mat[j] + o_s.alpha_mat[i] - o_s.C)
+            high = min(o_s.C, o_s.alpha_mat[j] + o_s.alpha_mat[i])
+        if low == high:
+            print('low==high')
+            return 0
+        eta = 2.0 * o_s.X[i, :] * o_s.X[j, :].T - (o_s.X[i, :] * o_s.X[i, :].T) - (o_s.X[j, :] * o_s.X[j, :].T)
+        if eta >= 0:
+            print('eta >= 0')
+            return 0
+        o_s.alpha_mat[j] -= o_s.label_list[j] * (err_i - err_j) / eta
+        o_s.alpha_mat[j] = clip_alpha(o_s.alpha_mat[j], high, low)
+        update_err_k(o_s, j)
+        if abs(o_s.alpha_mat[j] - alpha_j_old) < 0.00001:
+            print('j not moving enough')
+            return 0
+        o_s.alpha_mat[i] += o_s.label_list[j] * o_s.label_list[i] * (alpha_j_old - o_s.alpha_mat[j])
+        update_err_k(o_s, i)
+
+        b1_tmp1 = o_s.b - err_i - o_s.label_list[i] * (o_s.alpha_mat[i] - alpha_i_old) * o_s.X[i, :] * o_s.X[i, :].T
+        b1_tmp2 = o_s.label_list[j] * (o_s.alpha_mat[j] - alpha_j_old) * o_s.X[i, :] * o_s.X[j, :].T
+        b1 = b1_tmp1 - b1_tmp2
+
+        b2_tmp1 = o_s.b - err_i - o_s.label_list[i] * (o_s.alpha_mat[i] - alpha_i_old) * o_s.X[i, :] * o_s.X[j, :].T
+        b2_tmp2 = o_s.label_list[j] * (o_s.alpha_mat[j] - alpha_j_old) * o_s.X[j, :] * o_s.X[j, :].T
+        b2 = b2_tmp1 - b2_tmp2
+
+        if (0 < o_s.alpha_mat[i]) and (o_s.C > o_s.alpha_mat[i]):
+            o_s.b = b1
+        elif (0 < o_s.alpha_mat[j]) and (o_s.C > o_s.alpha_mat[j]):
+            o_s.b = b2
+        else:
+            o_s.b = (b1 + b2) / 2.0
+        return 1
+    else:
+        return 0
+
+
 if __name__ == "__main__":
     data_arr, label_arr = load_data_set('resource/testSet1.txt')
     bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
     print(bb)
     print(alphas[alphas > 0])
     print(shape(alphas[alphas > 0]))
-
