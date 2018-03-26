@@ -126,21 +126,21 @@ def simple_smo(data_list, class_label_list, constant, tolerate, max_loop):
 
 
 class OptStruct:
-    def __init__(self, input_data_list, class_label_list, constant, tolerate):
-        self.X = input_data_list
-        self.label_list = class_label_list
+    def __init__(self, input_data_mat, class_label_mat, constant, tolerate):
+        self.X = input_data_mat
+        self.label_mat = class_label_mat
         self.C = constant
         self.tol = tolerate
-        self.m = shape(input_data_list)[0]
+        self.m = shape(input_data_mat)[0]
         self.alpha_mat = mat(zeros((self.m, 1)))
         self.b = 0
         self.err_cache = mat(zeros((self.m, 2)))
 
 
 def calc_err_k(o_s, k):
-    f_x_k = float(multiply(o_s.alpha_mat, o_s.label_list).T
-                  * (o_s.X * o_s.X[k, :].T)) + o_s.label_list
-    err_k = f_x_k - float(o_s.label_list[k])
+    f_x_k = float(multiply(o_s.alpha_mat, o_s.label_mat).T
+                  * (o_s.X * o_s.X[k, :].T)) + o_s.b
+    err_k = f_x_k - float(o_s.label_mat[k])
     return err_k
 
 
@@ -174,13 +174,13 @@ def update_err_k(o_s, k):
 
 def inner_l(i, o_s):
     err_i = calc_err_k(o_s, i)
-    is_okay = ((o_s.label_list[i] * err_i < -o_s.tol) and (o_s.alpha_mat[i] < o_s.C)) or \
-              ((o_s.label_list[i] * err_i > o_s.tol) and (o_s.alpha_mat[i] > 0))
+    is_okay = ((o_s.label_mat[i] * err_i < -o_s.tol) and (o_s.alpha_mat[i] < o_s.C)) or \
+              ((o_s.label_mat[i] * err_i > o_s.tol) and (o_s.alpha_mat[i] > 0))
     if is_okay:
         j, err_j = select_j(i, o_s, err_i)
         alpha_i_old = o_s.alpha_mat[i].copy()
         alpha_j_old = o_s.alpha_mat[j].copy()
-        if o_s.label_list[i] != o_s.label_list[j]:
+        if o_s.label_mat[i] != o_s.label_mat[j]:
             low = max(0, o_s.alpha_mat[j] - o_s.alpha_mat[i])
             high = min(o_s.C, o_s.C + o_s.alpha_mat[j] - o_s.alpha_mat[i])
         else:
@@ -193,21 +193,21 @@ def inner_l(i, o_s):
         if eta >= 0:
             print('eta >= 0')
             return 0
-        o_s.alpha_mat[j] -= o_s.label_list[j] * (err_i - err_j) / eta
+        o_s.alpha_mat[j] -= o_s.label_mat[j] * (err_i - err_j) / eta
         o_s.alpha_mat[j] = clip_alpha(o_s.alpha_mat[j], high, low)
         update_err_k(o_s, j)
         if abs(o_s.alpha_mat[j] - alpha_j_old) < 0.00001:
             print('j not moving enough')
             return 0
-        o_s.alpha_mat[i] += o_s.label_list[j] * o_s.label_list[i] * (alpha_j_old - o_s.alpha_mat[j])
+        o_s.alpha_mat[i] += o_s.label_mat[j] * o_s.label_mat[i] * (alpha_j_old - o_s.alpha_mat[j])
         update_err_k(o_s, i)
 
-        b1_tmp1 = o_s.b - err_i - o_s.label_list[i] * (o_s.alpha_mat[i] - alpha_i_old) * o_s.X[i, :] * o_s.X[i, :].T
-        b1_tmp2 = o_s.label_list[j] * (o_s.alpha_mat[j] - alpha_j_old) * o_s.X[i, :] * o_s.X[j, :].T
+        b1_tmp1 = o_s.b - err_i - o_s.label_mat[i] * (o_s.alpha_mat[i] - alpha_i_old) * o_s.X[i, :] * o_s.X[i, :].T
+        b1_tmp2 = o_s.label_mat[j] * (o_s.alpha_mat[j] - alpha_j_old) * o_s.X[i, :] * o_s.X[j, :].T
         b1 = b1_tmp1 - b1_tmp2
 
-        b2_tmp1 = o_s.b - err_i - o_s.label_list[i] * (o_s.alpha_mat[i] - alpha_i_old) * o_s.X[i, :] * o_s.X[j, :].T
-        b2_tmp2 = o_s.label_list[j] * (o_s.alpha_mat[j] - alpha_j_old) * o_s.X[j, :] * o_s.X[j, :].T
+        b2_tmp1 = o_s.b - err_i - o_s.label_mat[i] * (o_s.alpha_mat[i] - alpha_i_old) * o_s.X[i, :] * o_s.X[j, :].T
+        b2_tmp2 = o_s.label_mat[j] * (o_s.alpha_mat[j] - alpha_j_old) * o_s.X[j, :] * o_s.X[j, :].T
         b2 = b2_tmp1 - b2_tmp2
 
         if (0 < o_s.alpha_mat[i]) and (o_s.C > o_s.alpha_mat[i]):
@@ -221,9 +221,36 @@ def inner_l(i, o_s):
         return 0
 
 
+def platt_smo(data_list, class_label_list, constant, tolerate, max_loop, k_tup=('lin', 0)):
+    o_s = OptStruct(mat(data_list), mat(class_label_list).transpose(), constant, tolerate)
+    loop = 0
+    entire_set = True
+    alpha_pairs_changed = 0
+    while (loop < max_loop) and ((alpha_pairs_changed > 0) or entire_set):
+        alpha_pairs_changed = 0
+        if entire_set:
+            for i in range(o_s.m):
+                alpha_pairs_changed += inner_l(i, o_s)
+                print('fullSet, loop: %d, i: %d, pairs changed %d' % (loop, i, alpha_pairs_changed))
+            loop += 1
+        else:
+            non_bound_is = nonzero((o_s.alpha_mat.A > 0) * (o_s.alpha_mat.A < constant))[0]
+            for i in non_bound_is:
+                alpha_pairs_changed += inner_l(i, o_s)
+                print('non bound, loop: %d, i: %d, pairs changed %d' % (loop, i, alpha_pairs_changed))
+            loop += 1
+        if entire_set:
+            entire_set = False
+        elif alpha_pairs_changed == 0:
+            entire_set = 0
+        print('loop number: %d' % loop)
+    return o_s.b, o_s.alpha_mat
+
+
 if __name__ == "__main__":
     data_arr, label_arr = load_data_set('resource/testSet1.txt')
-    bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
+    # bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
+    bb, alphas = platt_smo(data_arr, label_arr, 0.6, 0.001, 40)
     print(bb)
     print(alphas[alphas > 0])
     print(shape(alphas[alphas > 0]))
