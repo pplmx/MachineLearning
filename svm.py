@@ -247,6 +247,16 @@ def platt_smo(data_list, class_label_list, constant, tolerate, max_loop, k_tup=(
     return o_s.b, o_s.alpha_mat
 
 
+def calc_ws(alpha_mat, data_list, class_label_list):
+    x = mat(data_list)
+    label_mat = mat(class_label_list)
+    m, n = shape(x)
+    w = zeros((n, 1))
+    for i in range(m):
+        w += multiply(alpha_mat[i] * label_mat[i], x[i, :].T)
+    return w
+
+
 if __name__ == "__main__":
     data_arr, label_arr = load_data_set('resource/testSet1.txt')
     # bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
