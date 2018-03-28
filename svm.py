@@ -21,7 +21,7 @@
         [6]使用算法: 几乎所有分类问题都可以使用SVM,值得一提的是,SVM本身是一个二类分类器
                     对多类问题应用,SVM需要对代码做一些修改
 """
-from numpy import random, mat, shape, zeros, multiply, nonzero
+from numpy import random, mat, shape, zeros, multiply, nonzero, exp
 
 
 def load_data_set(file_name):
@@ -126,7 +126,7 @@ def simple_smo(data_list, class_label_list, constant, tolerate, max_loop):
 
 
 class OptStruct:
-    def __init__(self, input_data_mat, class_label_mat, constant, tolerate):
+    def __init__(self, input_data_mat, class_label_mat, constant, tolerate, k_tup):
         self.X = input_data_mat
         self.label_mat = class_label_mat
         self.C = constant
@@ -135,11 +135,12 @@ class OptStruct:
         self.alpha_mat = mat(zeros((self.m, 1)))
         self.b = 0
         self.err_cache = mat(zeros((self.m, 2)))
+        self.K = mat(zeros((self.m, self.m)))
 
 
 def calc_err_k(o_s, k):
     f_x_k = float(multiply(o_s.alpha_mat, o_s.label_mat).T
-                  * (o_s.X * o_s.X[k, :].T)) + o_s.b
+                  * o_s.K[:, k] + o_s.b)
     err_k = f_x_k - float(o_s.label_mat[k])
     return err_k
 
@@ -189,7 +190,7 @@ def inner_l(i, o_s):
         if low == high:
             print('low==high')
             return 0
-        eta = 2.0 * o_s.X[i, :] * o_s.X[j, :].T - (o_s.X[i, :] * o_s.X[i, :].T) - (o_s.X[j, :] * o_s.X[j, :].T)
+        eta = 2.0 * o_s.K[i, j] - o_s.K[i, i] - o_s.K[j, j]
         if eta >= 0:
             print('eta >= 0')
             return 0
@@ -202,12 +203,12 @@ def inner_l(i, o_s):
         o_s.alpha_mat[i] += o_s.label_mat[j] * o_s.label_mat[i] * (alpha_j_old - o_s.alpha_mat[j])
         update_err_k(o_s, i)
 
-        b1_tmp1 = o_s.b - err_i - o_s.label_mat[i] * (o_s.alpha_mat[i] - alpha_i_old) * o_s.X[i, :] * o_s.X[i, :].T
-        b1_tmp2 = o_s.label_mat[j] * (o_s.alpha_mat[j] - alpha_j_old) * o_s.X[i, :] * o_s.X[j, :].T
+        b1_tmp1 = o_s.b - err_i - o_s.label_mat[i] * (o_s.alpha_mat[i] - alpha_i_old) * o_s.K[i, i]
+        b1_tmp2 = o_s.label_mat[j] * (o_s.alpha_mat[j] - alpha_j_old) * o_s.K[i, j]
         b1 = b1_tmp1 - b1_tmp2
 
-        b2_tmp1 = o_s.b - err_i - o_s.label_mat[i] * (o_s.alpha_mat[i] - alpha_i_old) * o_s.X[i, :] * o_s.X[j, :].T
-        b2_tmp2 = o_s.label_mat[j] * (o_s.alpha_mat[j] - alpha_j_old) * o_s.X[j, :] * o_s.X[j, :].T
+        b2_tmp1 = o_s.b - err_j - o_s.label_mat[i] * (o_s.alpha_mat[i] - alpha_i_old) * o_s.K[i, j]
+        b2_tmp2 = o_s.label_mat[j] * (o_s.alpha_mat[j] - alpha_j_old) * o_s.K[j, j]
         b2 = b2_tmp1 - b2_tmp2
 
         if (0 < o_s.alpha_mat[i]) and (o_s.C > o_s.alpha_mat[i]):
@@ -222,7 +223,7 @@ def inner_l(i, o_s):
 
 
 def platt_smo(data_list, class_label_list, constant, tolerate, max_loop, k_tup=('lin', 0)):
-    o_s = OptStruct(mat(data_list), mat(class_label_list).transpose(), constant, tolerate)
+    o_s = OptStruct(mat(data_list), mat(class_label_list).transpose(), constant, tolerate, k_tup)
     loop = 0
     entire_set = True
     alpha_pairs_changed = 0
@@ -257,10 +258,34 @@ def calc_ws(alpha_mat, data_list, class_label_list):
     return w
 
 
+def kernel_translation(x, a, k_tup):
+    m, n = shape(x)
+    k = mat(zeros((m, 1)))
+    if k_tup[0] == 'lin':
+        k = x * a.T
+    elif k_tup[0] == 'rbf':
+        for j in range(m):
+            delta_row = x[j, :] - a
+            k[j] = delta_row * delta_row.T
+        k = exp(k/(-1*k_tup[1]**2))
+    else:
+        raise NameError('Houston We Have a Problem -- That Kernel is not recognized')
+    return k
+
+
+def test_rbf(k1 = 1.3):
+    data_arr, label_arr = load_data_set('resource/testSetRBF.txt')
+    b, alpha_matrix = platt_smo(data_arr, label_arr, 200, 0.0001, 10000, ('rbf', k1))
+    data_matrix = mat(data_arr)
+    label_matrix = mat(label_arr).transpose()
+    sv_ind = nonzero(alpha_matrix.A > 0)[0]
+    s_v_s = data_matrix[sv_ind]
+    label_sv = label_matrix[sv_ind]
+    print('There are %d Support Vectors' % shape(s_v_s)[0])
+
+
 if __name__ == "__main__":
-    data_arr, label_arr = load_data_set('resource/testSet1.txt')
+    # data_arr, label_arr = load_data_set('resource/testSet1.txt')
     # bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
-    bb, alphas = platt_smo(data_arr, label_arr, 0.6, 0.001, 40)
-    print(bb)
-    print(alphas[alphas > 0])
-    print(shape(alphas[alphas > 0]))
+    # bb, alphas = platt_smo(data_arr, label_arr, 0.6, 0.001, 40)
+    test_rbf
