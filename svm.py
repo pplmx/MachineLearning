@@ -21,7 +21,7 @@
         [6]使用算法: 几乎所有分类问题都可以使用SVM,值得一提的是,SVM本身是一个二类分类器
                     对多类问题应用,SVM需要对代码做一些修改
 """
-from numpy import random, mat, shape, zeros, multiply, nonzero, exp
+from numpy import random, mat, shape, zeros, multiply, nonzero, exp, sign
 
 
 def load_data_set(file_name):
@@ -282,10 +282,29 @@ def test_rbf(k1 = 1.3):
     s_v_s = data_matrix[sv_ind]
     label_sv = label_matrix[sv_ind]
     print('There are %d Support Vectors' % shape(s_v_s)[0])
+    m, n = shape(data_matrix)
+    error_count = 0
+    for i in range(m):
+        kernel_eval = kernel_translation(s_v_s, data_matrix[i, :], ('rbf', k1))
+        predict = kernel_eval.T * multiply(label_sv, alpha_matrix[sv_ind]) + b
+        if sign(predict) != sign(label_arr[i]):
+            error_count += 1
+    print('The training error rate is: %f' % (error_count/m))
+    data_arr, label_arr = load_data_set('resource/testSetRBF2.txt')
+    error_count = 0
+    data_matrix = mat(data_arr)
+    label_matrix = mat(label_arr).transpose()
+    m, n = shape(data_matrix)
+    for i in range(m):
+        kernel_eval = kernel_translation(s_v_s, data_matrix[i, :], ('rbf', k1))
+        predict = kernel_eval.T * multiply(label_sv, alpha_matrix[sv_ind]) + b
+        if sign(predict) != sign(label_arr[i]):
+            error_count += 1
+    print('The test error rate is： %f' % (error_count/m))
 
 
 if __name__ == "__main__":
     # data_arr, label_arr = load_data_set('resource/testSet1.txt')
     # bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
     # bb, alphas = platt_smo(data_arr, label_arr, 0.6, 0.001, 40)
-    test_rbf
+    test_rbf()
