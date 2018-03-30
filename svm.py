@@ -304,7 +304,7 @@ def test_rbf(k1 = 1.3):
 
 
 if __name__ == "__main__":
-    # data_arr, label_arr = load_data_set('resource/testSet1.txt')
-    # bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
+    data_arr, label_arr = load_data_set('resource/testSet1.txt')
+    bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
     # bb, alphas = platt_smo(data_arr, label_arr, 0.6, 0.001, 40)
-    test_rbf()
+    # test_rbf()
