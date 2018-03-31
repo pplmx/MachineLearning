@@ -136,6 +136,8 @@ class OptStruct:
         self.b = 0
         self.err_cache = mat(zeros((self.m, 2)))
         self.K = mat(zeros((self.m, self.m)))
+        for i in range(self.m):
+            self.K[:, i] = kernel_translation(self.X, self.X[i, :], k_tup)
 
 
 def calc_err_k(o_s, k):
@@ -267,17 +269,50 @@ def kernel_translation(x, a, k_tup):
         for j in range(m):
             delta_row = x[j, :] - a
             k[j] = delta_row * delta_row.T
-        k = exp(k/(-1*k_tup[1]**2))
+        k = exp(k / (-1 * k_tup[1] ** 2))
     else:
         raise NameError('Houston We Have a Problem -- That Kernel is not recognized')
     return k
 
 
-def test_rbf(k1 = 1.3):
-    data_arr, label_arr = load_data_set('resource/testSetRBF.txt')
-    b, alpha_matrix = platt_smo(data_arr, label_arr, 200, 0.0001, 10000, ('rbf', k1))
-    data_matrix = mat(data_arr)
-    label_matrix = mat(label_arr).transpose()
+def img2vector(filename):
+    """
+    将32*32的二进制图像矩阵转化为1*1024的向量
+    :param filename:
+    :return:
+    """
+    return_vector = zeros((1, 1024))
+    fr = open(filename)
+    for i in range(32):
+        line = fr.readline()
+        for j in range(32):
+            return_vector[0, 32*i+j] = int(line[j])
+    return return_vector
+
+
+def load_images(directory):
+    from os import listdir
+    hand_writing_label_list = []
+    training_file_list = listdir(directory)
+    m = len(training_file_list)
+    training_arr = zeros((m, 1024))
+    for i in range(m):
+        filename_str = training_file_list[i]
+        file_str = filename_str.split('.')[0]
+        class_num_str = file_str.split('_')[0]
+        if class_num_str == '9':
+            hand_writing_label_list.append(-1)
+        else:
+            hand_writing_label_list.append(1)
+        training_arr[i, :] = img2vector('%s/%s' % (directory, filename_str))
+    return training_arr, hand_writing_label_list
+
+
+def test_rbf(k1=1.0):
+    data_list, label_list = load_data_set('resource/testSetRBF.txt')
+    b, alpha_matrix = platt_smo(data_list, label_list, 200, 0.0001, 10000, ('rbf', k1))
+    data_matrix = mat(data_list)
+    label_matrix = mat(label_list).transpose()
     sv_ind = nonzero(alpha_matrix.A > 0)[0]
     s_v_s = data_matrix[sv_ind]
     label_sv = label_matrix[sv_ind]
@@ -287,24 +322,24 @@ def test_rbf(k1 = 1.3):
     for i in range(m):
         kernel_eval = kernel_translation(s_v_s, data_matrix[i, :], ('rbf', k1))
         predict = kernel_eval.T * multiply(label_sv, alpha_matrix[sv_ind]) + b
-        if sign(predict) != sign(label_arr[i]):
+        if sign(predict) != sign(label_list[i]):
             error_count += 1
-    print('The training error rate is: %f' % (error_count/m))
-    data_arr, label_arr = load_data_set('resource/testSetRBF2.txt')
+    print('The training error rate is: %f' % (error_count / m))
+    data_list, label_list = load_data_set('resource/testSetRBF2.txt')
     error_count = 0
-    data_matrix = mat(data_arr)
-    label_matrix = mat(label_arr).transpose()
+    data_matrix = mat(data_list)
+    label_matrix = mat(label_list).transpose()
     m, n = shape(data_matrix)
     for i in range(m):
         kernel_eval = kernel_translation(s_v_s, data_matrix[i, :], ('rbf', k1))
         predict = kernel_eval.T * multiply(label_sv, alpha_matrix[sv_ind]) + b
-        if sign(predict) != sign(label_arr[i]):
+        if sign(predict) != sign(label_list[i]):
             error_count += 1
-    print('The test error rate is： %f' % (error_count/m))
+    print('The test error rate is： %f' % (error_count / m))
 
 
 if __name__ == "__main__":
-    data_arr, label_arr = load_data_set('resource/testSet1.txt')
-    bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
+    # data_arr, label_arr = load_data_set('resource/testSet1.txt')
+    # bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
     # bb, alphas = platt_smo(data_arr, label_arr, 0.6, 0.001, 40)
-    # test_rbf()
+    test_rbf()
