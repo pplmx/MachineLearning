@@ -286,7 +286,7 @@ def img2vector(filename):
     for i in range(32):
         line = fr.readline()
         for j in range(32):
-            return_vector[0, 32*i+j] = int(line[j])
+            return_vector[0, 32 * i + j] = int(line[j])
     return return_vector
 
 
@@ -299,8 +299,8 @@ def load_images(directory):
     for i in range(m):
         filename_str = training_file_list[i]
         file_str = filename_str.split('.')[0]
-        class_num_str = file_str.split('_')[0]
-        if class_num_str == '9':
+        class_num_str = int(file_str.split('_')[0])
+        if class_num_str == 9:
             hand_writing_label_list.append(-1)
         else:
             hand_writing_label_list.append(1)
@@ -328,7 +328,6 @@ def test_rbf(k1=1.0):
     data_list, label_list = load_data_set('resource/testSetRBF2.txt')
     error_count = 0
     data_matrix = mat(data_list)
-    label_matrix = mat(label_list).transpose()
     m, n = shape(data_matrix)
     for i in range(m):
         kernel_eval = kernel_translation(s_v_s, data_matrix[i, :], ('rbf', k1))
@@ -338,8 +337,38 @@ def test_rbf(k1=1.0):
     print('The test error rate is： %f' % (error_count / m))
 
 
+def test_digits(k_tup=('rbf', 10)):
+    data_list, label_list = load_images('resource/digits/trainingDigits')
+    b, alpha_mat = platt_smo(data_list, label_list, 200, 0.0001, 10000, k_tup)
+    data_mat = mat(data_list)
+    label_mat = mat(label_list).transpose()
+    sv_ind = nonzero(alpha_mat.A > 0)[0]
+    s_v_s = data_mat[sv_ind]
+    label_sv = label_mat[sv_ind]
+    print('There are %d Support Vectors' % shape(s_v_s)[0])
+    m, n = shape(data_mat)
+    error_count = 0
+    for i in range(m):
+        kernel_eval = kernel_translation(s_v_s, data_mat[i, :], k_tup)
+        predict = kernel_eval.T * multiply(label_sv, alpha_mat[sv_ind]) + b
+        if sign(predict) != sign(label_list[i]):
+            error_count += 1
+    print('The training error rate is: %f' % (error_count / m))
+    data_list, label_list = load_images('resource/digits/testDigits')
+    error_count = 0
+    data_mat = mat(data_list)
+    m, n = shape(data_mat)
+    for i in range(m):
+        kernel_eval = kernel_translation(s_v_s, data_mat[i, :], k_tup)
+        predict = kernel_eval.T * multiply(label_sv, alpha_mat[sv_ind]) + b
+        if sign(predict) != sign(label_list[i]):
+            error_count += 1
+    print('The test error rate is： %f' % (error_count / m))
+
+
 if __name__ == "__main__":
     # data_arr, label_arr = load_data_set('resource/testSet1.txt')
     # bb, alphas = simple_smo(data_arr, label_arr, 0.6, 0.001, 40)
     # bb, alphas = platt_smo(data_arr, label_arr, 0.6, 0.001, 40)
-    test_rbf()
+    # test_rbf()
+    test_digits(('rbf', 20))
