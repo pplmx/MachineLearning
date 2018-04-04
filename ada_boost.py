@@ -29,3 +29,14 @@
     同SVM一样,AdaBoost预测两个类别中的一个
     如果应用到多个类别,需要像多类SVM的做法一样,对AdaBoost进行修改
 """
+from numpy import mat
+
+
+def load_simple_data():
+    data_mat = mat([[1., 2.1],
+                    [2., 1.1],
+                    [1.3, 1.],
+                    [1., 1.],
+                    [2., 1.]])
+    class_label_list = [1.0, 1.0, -1.0, -1.0, 1.0]
+    return data_mat, class_label_list
