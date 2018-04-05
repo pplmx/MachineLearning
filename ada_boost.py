@@ -29,7 +29,7 @@
     同SVM一样,AdaBoost预测两个类别中的一个
     如果应用到多个类别,需要像多类SVM的做法一样,对AdaBoost进行修改
 """
-from numpy import mat
+from numpy import mat, ones, shape, zeros, inf, log, multiply, exp, sign
 
 
 def load_simple_data():
@@ -40,3 +40,94 @@ def load_simple_data():
                     [2., 1.]])
     class_label_list = [1.0, 1.0, -1.0, -1.0, 1.0]
     return data_mat, class_label_list
+
+
+def stump_classify(data_mat, dimension, thresh_val, thresh_unequal):
+    return_arr = ones((shape(data_mat)[0], 1))
+    if thresh_unequal == 'lt':
+        return_arr[data_mat[:, dimension] <= thresh_val] = -1.0
+    else:
+        return_arr[data_mat[:, dimension] > thresh_val] = 1.0
+    return return_arr
+
+
+def build_stump(data_list, class_label_list, d):
+    """
+        build best decision stump
+    :param data_list:
+    :param class_label_list:
+    :param d:
+    :return:
+    """
+    data_mat = mat(data_list)
+    label_mat = mat(class_label_list).T
+    m, n = shape(data_mat)
+    num_steps = 10
+    # create empty dict
+    best_stump = {}
+    best_class_estimation = mat(zeros((m, 1)))
+    # init error sum, to +infinity
+    min_err = inf
+    # loop over all dimensions
+    for i in range(n):
+        range_min = data_mat[:, i].min()
+        range_max = data_mat[:, i].max()
+        step_size = (range_max - range_min) / num_steps
+        # loop over all range in current dimension
+        for j in range(-1, int(num_steps) + 1):
+            for unequal in ['lt', 'gt']:
+                thresh_val = (range_min + float(j) * step_size)
+                predicted_val_arr = stump_classify(data_mat, i, thresh_val, unequal)
+                err_mat = mat(ones((m, 1)))
+                err_mat[predicted_val_arr == label_mat] = 0
+                # calc the weighted error rate
+                weighted_err = d.T * err_mat
+                # print("split: dimension %d, thresh %.2f, thresh unequal: %s, the weighted error is %.3f"
+                #       % (i, thresh_val, unequal, weighted_err))
+                if weighted_err < min_err:
+                    min_err = weighted_err
+                    best_class_estimation = predicted_val_arr.copy()
+                    best_stump['dimension'] = i
+                    best_stump['thresh'] = thresh_val
+                    best_stump['unequal'] = unequal
+    return best_stump, min_err, best_class_estimation
+
+
+def ada_boost_train_decision_stump(data_list, class_label_list, iterator=40):
+    weak_class_list = []
+    m = shape(data_list)[0]
+    # init D to all equal
+    d = mat(ones((m, 1)) / m)
+    aggregate_class_estimation = mat(zeros((m, 1)))
+    for i in range(iterator):
+        # build stump
+        best_stump, err, class_estimation = build_stump(data_list, class_label_list, d)
+        print('D: ', d.T)
+        # calc alpha, throw in max(error,eps) to account for error=0
+        # meanwhile, transfer list type to numerical type
+        alpha = float(0.5 * log((1.0 - err) / max(err, 1e-16)))
+        best_stump['alpha'] = alpha
+        # store stump params in list
+        weak_class_list.append(best_stump)
+        print('class estimation: ', class_estimation.T)
+        exponent = multiply(-1 * alpha * mat(class_label_list).T, class_estimation)
+        # calc new d for next iteration
+        d = multiply(d, exp(exponent))
+        d = d / d.sum()
+        aggregate_class_estimation += alpha * class_estimation
+        print('aggregate class estimation: ', aggregate_class_estimation.T)
+        aggregate_errors = multiply(sign(aggregate_class_estimation) != mat(class_label_list).T, ones((m, 1)))
+        err_rate = aggregate_errors.sum() / m
+        print('total error: %f\n' % err_rate)
+        # calc training error of all classifiers, if this is 0 quit for loop early
+        if err_rate == 0.0:
+            break
+    return weak_class_list
+
+
+if __name__ == '__main__':
+    data_matrix, labels = load_simple_data()
+    # single decision stump
+    # DD = mat(ones((5, 1)) / 5)
+    # print(build_stump(data_matrix, labels, DD))
+    print(ada_boost_train_decision_stump(data_matrix, labels, 9))
