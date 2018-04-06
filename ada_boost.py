@@ -102,27 +102,39 @@ def ada_boost_train_decision_stump(data_list, class_label_list, iterator=40):
     for i in range(iterator):
         # build stump
         best_stump, err, class_estimation = build_stump(data_list, class_label_list, d)
-        print('D: ', d.T)
+        # print('D: ', d.T)
         # calc alpha, throw in max(error,eps) to account for error=0
         # meanwhile, transfer list type to numerical type
         alpha = float(0.5 * log((1.0 - err) / max(err, 1e-16)))
         best_stump['alpha'] = alpha
         # store stump params in list
         weak_class_list.append(best_stump)
-        print('class estimation: ', class_estimation.T)
+        # print('class estimation: ', class_estimation.T)
         exponent = multiply(-1 * alpha * mat(class_label_list).T, class_estimation)
         # calc new d for next iteration
         d = multiply(d, exp(exponent))
         d = d / d.sum()
         aggregate_class_estimation += alpha * class_estimation
-        print('aggregate class estimation: ', aggregate_class_estimation.T)
+        # print('aggregate class estimation: ', aggregate_class_estimation.T)
         aggregate_errors = multiply(sign(aggregate_class_estimation) != mat(class_label_list).T, ones((m, 1)))
         err_rate = aggregate_errors.sum() / m
-        print('total error: %f\n' % err_rate)
+        # print('total error: %f\n' % err_rate)
         # calc training error of all classifiers, if this is 0 quit for loop early
         if err_rate == 0.0:
             break
     return weak_class_list
+
+
+def ada_classify(data2class, classifier_list):
+    data_mat = mat(data2class)
+    m = shape(data_mat)[0]
+    aggregate_class_estimation = mat(zeros((m, 1)))
+    for i in range(len(classifier_list)):
+        best_stump = classifier_list[i]
+        class_estimation = stump_classify(data_mat, best_stump['dimension'], best_stump['thresh'], best_stump['unequal'])
+        aggregate_class_estimation += best_stump['alpha'] * class_estimation
+        print('aggregate class estimation: ', aggregate_class_estimation)
+    return sign(aggregate_class_estimation)
 
 
 if __name__ == '__main__':
@@ -130,4 +142,5 @@ if __name__ == '__main__':
     # single decision stump
     # DD = mat(ones((5, 1)) / 5)
     # print(build_stump(data_matrix, labels, DD))
-    print(ada_boost_train_decision_stump(data_matrix, labels, 9))
+    classifier_list = ada_boost_train_decision_stump(data_matrix, labels, 30)
+    print(ada_classify([[5, 5], [0, 0]], classifier_list))
