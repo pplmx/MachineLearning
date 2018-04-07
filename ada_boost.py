@@ -133,14 +133,35 @@ def ada_classify(data2class, classifier_list):
         best_stump = classifier_list[i]
         class_estimation = stump_classify(data_mat, best_stump['dimension'], best_stump['thresh'], best_stump['unequal'])
         aggregate_class_estimation += best_stump['alpha'] * class_estimation
-        print('aggregate class estimation: ', aggregate_class_estimation)
+        # print('aggregate class estimation: ', aggregate_class_estimation)
     return sign(aggregate_class_estimation)
 
 
+def load_data_set(filename):
+    data_list = []
+    label_list = []
+    with open(filename) as fr:
+        num_feature = len(fr.readline().split('\t'))
+        for line in fr.readlines():
+            line_list = []
+            current_line = line.strip().split('\t')
+            for i in range(num_feature - 1):
+                line_list.append(float(current_line[i]))
+            data_list.append(line_list)
+            label_list.append(float(current_line[-1]))
+    return data_list, label_list
+
+
 if __name__ == '__main__':
-    data_matrix, labels = load_simple_data()
+    # data_list_, label_list_ = load_simple_data()
+    data_list_, label_list_ = load_data_set('resource/horseColicTraining2.txt')
     # single decision stump
     # DD = mat(ones((5, 1)) / 5)
-    # print(build_stump(data_matrix, labels, DD))
-    classifier_list = ada_boost_train_decision_stump(data_matrix, labels, 30)
-    print(ada_classify([[5, 5], [0, 0]], classifier_list))
+    # print(build_stump(data_list_, label_list_, DD))
+    classifier_list_ = ada_boost_train_decision_stump(data_list_, label_list_, 10)
+    test_data_list_, test_label_list_ = load_data_set('resource/horseColicTest2.txt')
+    prediction_ = ada_classify(test_data_list_, classifier_list_)
+    err_mat_ = mat(ones((shape(prediction_)[0], 1)))
+    err_rate_ = err_mat_[prediction_ != mat(test_label_list_).T].sum()
+    print(err_rate_)
+
