@@ -29,7 +29,7 @@
     同SVM一样,AdaBoost预测两个类别中的一个
     如果应用到多个类别,需要像多类SVM的做法一样,对AdaBoost进行修改
 """
-from numpy import mat, ones, shape, zeros, inf, log, multiply, exp, sign
+from numpy import mat, ones, shape, zeros, inf, log, multiply, exp, sign, array
 
 
 def load_simple_data():
@@ -122,7 +122,7 @@ def ada_boost_train_decision_stump(data_list, class_label_list, iterator=40):
         # calc training error of all classifiers, if this is 0 quit for loop early
         if err_rate == 0.0:
             break
-    return weak_class_list
+    return weak_class_list, aggregate_class_estimation
 
 
 def ada_classify(data2class, classifier_list):
@@ -131,7 +131,8 @@ def ada_classify(data2class, classifier_list):
     aggregate_class_estimation = mat(zeros((m, 1)))
     for i in range(len(classifier_list)):
         best_stump = classifier_list[i]
-        class_estimation = stump_classify(data_mat, best_stump['dimension'], best_stump['thresh'], best_stump['unequal'])
+        class_estimation = stump_classify(data_mat, best_stump['dimension'], best_stump['thresh'],
+                                          best_stump['unequal'])
         aggregate_class_estimation += best_stump['alpha'] * class_estimation
         # print('aggregate class estimation: ', aggregate_class_estimation)
     return sign(aggregate_class_estimation)
@@ -152,16 +153,49 @@ def load_data_set(filename):
     return data_list, label_list
 
 
+def plot_roc(prediction_strength, class_label_list):
+    import matplotlib.pyplot as plt
+    cursor = (1.0, 1.0)
+    y_sum = 0.0
+    num_pos_class = sum(array(class_label_list) == 1.0)
+    y_step = 1 / float(num_pos_class)
+    x_step = 1 / float(len(class_label_list) - num_pos_class)
+    # get sorted index, it's reverse
+    sorted_indices = prediction_strength.argsort()
+    fig = plt.figure()
+    fig.clf()
+    ax = plt.subplot(111)
+    # loop through all the values, drawing a line segment at each point
+    for index in sorted_indices.tolist()[0]:
+        if class_label_list[index] == 1.0:
+            del_x = 0
+            del_y = y_step
+        else:
+            del_x = x_step
+            del_y = 0
+            y_sum += cursor[1]
+        # draw line from cur to (cur[0]-delX,cur[1]-delY)
+        ax.plot([cursor[0], cursor[0] - del_x], [cursor[1], cursor[1] - del_y], c='b')
+        cursor = (cursor[0] - del_x, cursor[1] - del_y)
+    ax.plot([0, 1], [0, 1], 'b--')
+    plt.xlabel('False positive rate')
+    plt.ylabel('True positive rate')
+    plt.title('ROC curve for AdaBoost horse colic detection system')
+    ax.axis([0, 1, 0, 1])
+    plt.show()
+    print('the Area Under the Curve is: ', y_sum * x_step)
+
+
 if __name__ == '__main__':
     # data_list_, label_list_ = load_simple_data()
     data_list_, label_list_ = load_data_set('resource/horseColicTraining2.txt')
     # single decision stump
     # DD = mat(ones((5, 1)) / 5)
     # print(build_stump(data_list_, label_list_, DD))
-    classifier_list_ = ada_boost_train_decision_stump(data_list_, label_list_, 10)
+    classifier_list_, aggregate_class_estimation_ = ada_boost_train_decision_stump(data_list_, label_list_, 10)
     test_data_list_, test_label_list_ = load_data_set('resource/horseColicTest2.txt')
     prediction_ = ada_classify(test_data_list_, classifier_list_)
     err_mat_ = mat(ones((shape(prediction_)[0], 1)))
     err_rate_ = err_mat_[prediction_ != mat(test_label_list_).T].sum()
     print(err_rate_)
-
+    plot_roc(aggregate_class_estimation_.T, label_list_)
