@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author  : mystic
 # @date    : 2018/4/9 20:08
-from numpy import mat, linalg
+from numpy import mat, linalg, shape, eye
 
 
 def load_data_set(filename):
@@ -32,6 +32,13 @@ def stand_regression(x_list, y_list):
     # or invoke function in linalg, to solve unknown matrix
     # ws = linalg.solve(x_t_x, x_mat.T * y_mat)
     return ws
+
+
+def locally_weighed_linear_regression(test_point, x_list, y_list, k=1.0):
+    x_mat = mat(x_list)
+    y_mat = mat(y_list).T
+    m = shape(x_mat)[0]
+    weight_mat = mat(eye((m)))
 
 
 def plot(x_list, y_list, ws):
