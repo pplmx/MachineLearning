@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author  : mystic
 # @date    : 2018/4/9 20:08
-from numpy import mat, linalg, shape, eye
+from numpy import mat, linalg, shape, eye, exp, zeros
 
 
 def load_data_set(filename):
@@ -38,7 +38,25 @@ def locally_weighed_linear_regression(test_point, x_list, y_list, k=1.0):
     x_mat = mat(x_list)
     y_mat = mat(y_list).T
     m = shape(x_mat)[0]
-    weight_mat = mat(eye((m)))
+    # create m*m square matrix
+    weight_mat = mat(eye(m))
+    for j in range(m):
+        differ_mat = test_point - x_mat[j, :]
+        weight_mat[j, j] = exp(differ_mat * differ_mat.T/(-2.0*k**2))
+    x_t_x = x_mat.T * (weight_mat * x_mat)
+    if linalg.det(x_t_x) == 0.0:
+        print('This matrix is singular, cannot do inverse.')
+        return
+    ws = x_t_x.I * (x_mat.T * (weight_mat * y_mat))
+    return test_point * ws
+
+
+def lwlr_test(test_list, x_list, y_list, k=1.0):
+    m = shape(test_list)[0]
+    y_hat = zeros(m)
+    for i in range(m):
+        y_hat[i] = locally_weighed_linear_regression(test_list[i], x_list, y_list, k)
+    return  y_hat
 
 
 def plot(x_list, y_list, ws):
