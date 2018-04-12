@@ -56,7 +56,7 @@ def lwlr_test(test_list, x_list, y_list, k=1.0):
     y_hat = zeros(m)
     for i in range(m):
         y_hat[i] = locally_weighed_linear_regression(test_list[i], x_list, y_list, k)
-    return  y_hat
+    return y_hat
 
 
 def plot(x_list, y_list, ws):
