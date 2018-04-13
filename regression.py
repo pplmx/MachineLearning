@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author  : mystic
 # @date    : 2018/4/9 20:08
-from numpy import mat, linalg, shape, eye, exp, zeros
+from numpy import mat, linalg, shape, eye, exp, zeros, mean, var
 
 
 def load_data_set(filename):
@@ -39,10 +39,11 @@ def locally_weighed_linear_regression(test_point, x_list, y_list, k=1.0):
     y_mat = mat(y_list).T
     m = shape(x_mat)[0]
     # create m*m square matrix
+    # Return a 2-D array with ones on the diagonal and zeros elsewhere.
     weight_mat = mat(eye(m))
     for j in range(m):
         differ_mat = test_point - x_mat[j, :]
-        weight_mat[j, j] = exp(differ_mat * differ_mat.T/(-2.0*k**2))
+        weight_mat[j, j] = exp(differ_mat * differ_mat.T / (-2.0 * k ** 2))
     x_t_x = x_mat.T * (weight_mat * x_mat)
     if linalg.det(x_t_x) == 0.0:
         print('This matrix is singular, cannot do inverse.')
@@ -57,6 +58,34 @@ def lwlr_test(test_list, x_list, y_list, k=1.0):
     for i in range(m):
         y_hat[i] = locally_weighed_linear_regression(test_list[i], x_list, y_list, k)
     return y_hat
+
+
+def ridge_regression(x_mat, y_mat, lambda_=0.2):
+    x_t_x = x_mat.T * x_mat
+    denominator = x_t_x + eye(shape(x_mat)[1]) * lambda_
+    if linalg.det(denominator) == 0.0:
+        print('This matrix is singular, cannot do inverse.')
+        return
+    ws = denominator.I * (x_mat.T * y_mat)
+    return ws
+
+
+def ridge_test(x_list, y_list):
+    x_mat = mat(x_list)
+    y_mat = mat(y_list).T
+    # Compute the arithmetic mean along the specified axis.
+    y_mean = mean(y_mat, 0)
+    y_mat = y_mat - y_mean
+    x_mean = mean(x_mat, 0)
+    # Compute the variance along the specified axis.
+    x_var = var(x_mat, 0)
+    x_mat = (x_mat - x_mean)/x_var
+    num_test = 30
+    w_mat = zeros((num_test, shape(x_mat)[1]))
+    for i in range(num_test):
+        ws = ridge_regression(x_mat, y_mat, exp(i-10))
+        w_mat[i, :] = ws.T
+    return w_mat
 
 
 def plot(x_list, y_list, ws):
