@@ -109,3 +109,4 @@ if __name__ == '__main__':
     ws_ = stand_regression(x_list_, y_list_)
     print(ws_)
     plot(x_list_, y_list_, ws_)
+
