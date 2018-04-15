@@ -20,7 +20,7 @@ def load_data_set(filename):
     return data_list, label_list
 
 
-def stand_regression(x_list, y_list):
+def standard_regression(x_list, y_list):
     x_mat = mat(x_list)
     y_mat = mat(y_list).T
     x_t_x = x_mat.T * x_mat
@@ -79,16 +79,16 @@ def ridge_test(x_list, y_list):
     x_mean = mean(x_mat, 0)
     # Compute the variance along the specified axis.
     x_var = var(x_mat, 0)
-    x_mat = (x_mat - x_mean)/x_var
+    x_mat = (x_mat - x_mean) / x_var
     num_test = 30
     w_mat = zeros((num_test, shape(x_mat)[1]))
     for i in range(num_test):
-        ws = ridge_regression(x_mat, y_mat, exp(i-10))
+        ws = ridge_regression(x_mat, y_mat, exp(i - 10))
         w_mat[i, :] = ws.T
     return w_mat
 
 
-def plot(x_list, y_list, ws):
+def plot_standard(x_list, y_list, ws):
     import matplotlib.pyplot as plt
     x_mat = mat(x_list)
     y_mat = mat(y_list).T
@@ -104,9 +104,33 @@ def plot(x_list, y_list, ws):
     plt.show()
 
 
-if __name__ == '__main__':
-    x_list_, y_list_ = load_data_set('resource/ex0.txt')
-    ws_ = stand_regression(x_list_, y_list_)
-    print(ws_)
-    plot(x_list_, y_list_, ws_)
+def plot_lwlr(x_list, y_list, y_hat):
+    import matplotlib.pyplot as plt
+    # sort x_list
+    x_mat = mat(x_list)
+    sort_idx = x_mat[:, 1].argsort(0)
+    x_sort = x_mat[sort_idx][:, 0, :]
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(x_sort[:, 1], y_hat[sort_idx])
+    ax.scatter(x_mat[:, 1].flatten().A[0], mat(y_list).T.flatten().A[0], s=2, c='red')
+    plt.show()
 
+
+def plot_ridge(w_mat):
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(w_mat)
+    plt.show()
+
+
+if __name__ == '__main__':
+    # x_list_, y_list_ = load_data_set('resource/ex0.txt')
+    # ws_ = standard_regression(x_list_, y_list_)
+    # plot_standard(x_list_, y_list_, ws_)
+    # y_hat_ = lwlr_test(x_list_, x_list_, y_list_, 0.003)
+    # plot_lwlr(x_list_, y_list_, y_hat_)
+    ab_x, ab_y = load_data_set('resource/abalone.txt')
+    w_mat_ = ridge_test(ab_x, ab_y)
+    plot_ridge(w_mat_)
