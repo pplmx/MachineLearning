@@ -88,6 +88,27 @@ def ridge_test(x_list, y_list):
     return w_mat
 
 
+def regularize(x_mat):  # regularize by columns
+    in_mat = x_mat.copy()
+    in_means = mean(in_mat, 0)  # calc mean then subtract it off
+    in_var = var(in_mat, 0)  # calc variance of Xi then divide by it
+    in_mat = (in_mat - in_means) / in_var
+    return in_mat
+
+
+def forward_stage_wise_linear_regression(x_list, y_list, eps=0.01, loop=100):
+    x_mat = mat(x_list)
+    y_mat = mat(y_list).T
+    y_mean = mean(y_mat, 0)
+    y_mat = y_mat - y_mean
+    x_mat = regularize(x_mat)
+    m, n = shape(x_mat)
+    return_mat = zeros((loop, n))
+    ws = zeros((n, 1))
+    ws_test = ws.copy()
+    ws_max = ws.copy()
+
+
 def plot_standard(x_list, y_list, ws):
     import matplotlib.pyplot as plt
     x_mat = mat(x_list)
