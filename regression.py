@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author  : mystic
 # @date    : 2018/4/9 20:08
-from numpy import mat, linalg, shape, eye, exp, zeros, mean, var
+from numpy import mat, linalg, shape, eye, exp, zeros, mean, var, inf
 
 
 def load_data_set(filename):
@@ -96,6 +96,10 @@ def regularize(x_mat):  # regularize by columns
     return in_mat
 
 
+def rss_error(y_list, y_hat):  # y_list and y_hat both need to be arrays
+    return ((y_list - y_hat) ** 2).sum()
+
+
 def forward_stage_wise_linear_regression(x_list, y_list, eps=0.01, loop=100):
     x_mat = mat(x_list)
     y_mat = mat(y_list).T
@@ -105,8 +109,22 @@ def forward_stage_wise_linear_regression(x_list, y_list, eps=0.01, loop=100):
     m, n = shape(x_mat)
     return_mat = zeros((loop, n))
     ws = zeros((n, 1))
-    ws_test = ws.copy()
     ws_max = ws.copy()
+    for i in range(loop):
+        print(ws.T)
+        lowest_error = inf
+        for j in range(n):
+            for sign in [-1, 1]:
+                ws_test = ws.copy()
+                ws_test[j] += eps * sign
+                y_test = x_mat * ws_test
+                rss_err = rss_error(y_mat.A, y_test.A)
+                if rss_err < lowest_error:
+                    lowest_error = rss_err
+                    ws_max = ws_test
+        ws = ws_max.copy()
+        return_mat[i, :] = ws.T
+    return return_mat
 
 
 def plot_standard(x_list, y_list, ws):
