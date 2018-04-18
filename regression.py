@@ -104,6 +104,7 @@ def forward_stage_wise_linear_regression(x_list, y_list, eps=0.01, loop=100):
     x_mat = mat(x_list)
     y_mat = mat(y_list).T
     y_mean = mean(y_mat, 0)
+    # can also regularize ys but will get smaller coefficient
     y_mat = y_mat - y_mean
     x_mat = regularize(x_mat)
     m, n = shape(x_mat)
@@ -170,6 +171,7 @@ if __name__ == '__main__':
     # plot_standard(x_list_, y_list_, ws_)
     # y_hat_ = lwlr_test(x_list_, x_list_, y_list_, 0.003)
     # plot_lwlr(x_list_, y_list_, y_hat_)
-    ab_x, ab_y = load_data_set('resource/abalone.txt')
-    w_mat_ = ridge_test(ab_x, ab_y)
-    plot_ridge(w_mat_)
+    ab_x_, ab_y_ = load_data_set('resource/abalone.txt')
+    # w_mat_ = ridge_test(ab_x, ab_y)
+    # plot_ridge(w_mat_)
+    print(forward_stage_wise_linear_regression(ab_x_, ab_y_, 0.001, 5000))
