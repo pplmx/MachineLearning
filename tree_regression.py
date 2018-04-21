@@ -16,6 +16,7 @@
 5.测试算法: 使用测试数据上的R平方值来分析模型的效果
 6.使用算法: 使用训练出的树做预测,预测结果还可以用来做很多事情
 """
+from numpy import nonzero, mean, var, shape
 
 
 def load_data_set(filename):  # general function to parse tab -delimited floats
@@ -26,6 +27,35 @@ def load_data_set(filename):  # general function to parse tab -delimited floats
             flt_line = map(float, cur_line)  # map all elements to float()
             data_list.append(flt_line)
         return data_list
+
+
+def bin_split_data_set(data_set, feature, value):
+    mat_0 = data_set[nonzero(data_set[:, feature] > value)[0], :][0]
+    mat_1 = data_set[nonzero(data_set[:, feature] <= value)[0], :][0]
+    return mat_0, mat_1
+
+
+def reg_leaf(data_set):  # returns the value used for each leaf
+    return mean(data_set[:, -1])
+
+
+def reg_err(data_set):
+    return var(data_set[:, -1]) * shape(data_set)[0]
+
+
+def choose_best_split(data_set, leaf_type=reg_leaf, err_type=reg_err, ops=(1, 4)):
+    tol_s = ops[0]
+    tol_n = ops[1]
+    # if all the target variables are the same value: quit and return value
+    if len(set(data_set[:, -1].T.tolist()[0])) == 1:  # exit cond 1
+        return None, leaf_type(data_set)
+    m, n = shape(data_set)
+    # the choice of the best feature is driven by Reduction in RSS error from mean
+    S = err_type(data_set)
+
+
+
+def create_tree(data_set, leaf_type=reg_leaf, err_type=reg_err, ops=(1, 4)):
 
 
 def func():
