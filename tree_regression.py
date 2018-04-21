@@ -54,8 +54,8 @@ def choose_best_split(data_set, leaf_type=reg_leaf, err_type=reg_err, ops=(1, 4)
     S = err_type(data_set)
 
 
-
 def create_tree(data_set, leaf_type=reg_leaf, err_type=reg_err, ops=(1, 4)):
+    return None
 
 
 def func():
