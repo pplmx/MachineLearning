@@ -16,7 +16,7 @@
 5.测试算法: 使用测试数据上的R平方值来分析模型的效果
 6.使用算法: 使用训练出的树做预测,预测结果还可以用来做很多事情
 """
-from numpy import nonzero, mean, var, shape
+from numpy import nonzero, mean, var, shape, inf
 
 
 def load_data_set(filename):  # general function to parse tab -delimited floats
@@ -51,7 +51,13 @@ def choose_best_split(data_set, leaf_type=reg_leaf, err_type=reg_err, ops=(1, 4)
         return None, leaf_type(data_set)
     m, n = shape(data_set)
     # the choice of the best feature is driven by Reduction in RSS error from mean
-    S = err_type(data_set)
+    s = err_type(data_set)
+    best_s = inf
+    best_idx = 0
+    best_val = 0
+    for feature_idx in range(n - 1):
+        for split_val in set(data_set[:, feature_idx]):
+            mat_0, mat_1 = bin_split_data_set(data_set, feature_idx, split_val)
 
 
 def create_tree(data_set, leaf_type=reg_leaf, err_type=reg_err, ops=(1, 4)):
