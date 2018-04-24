@@ -16,7 +16,7 @@
 5.测试算法: 使用测试数据上的R平方值来分析模型的效果
 6.使用算法: 使用训练出的树做预测,预测结果还可以用来做很多事情
 """
-from numpy import nonzero, mean, var, shape, inf
+from numpy import nonzero, mean, var, shape, inf, mat
 
 
 def load_data_set(filename):  # general function to parse tab -delimited floats
@@ -90,5 +90,7 @@ def create_tree(data_set, leaf_type=regression_leaf, err_type=regression_err, op
     return return_tree
 
 
-def func():
-    return None
+if __name__ == '__main__':
+    data_list_ = load_data_set('resource/ex00.txt')
+    data_mat_ = mat(data_list_)
+    create_tree(data_mat_)
