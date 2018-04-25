@@ -24,7 +24,10 @@ def load_data_set(filename):  # general function to parse tab -delimited floats
     with open(filename) as fr:
         for line in fr.readlines():
             cur_line = line.strip().split('\t')
-            flt_line = map(float, cur_line)  # map all elements to float()
+            # TODO the return type has changed in python3
+            # before change: map(float, cur_line)
+            # after change: list(map(float, cur_line))
+            flt_line = list(map(float, cur_line))  # map all elements to float()
             data_list.append(flt_line)
         return data_list
 
@@ -39,8 +42,6 @@ def bin_split_data_set(data_set, feature, value):
 
 
 def regression_leaf(data_set):  # returns the value used for each leaf
-    # FIXME something wrong happened here
-    # FIXME TypeError: unsupported operand type(s) for /: 'map' and 'int'
     return mean(data_set[:, -1])
 
 
@@ -101,4 +102,4 @@ def create_tree(data_set, leaf_type=regression_leaf, err_type=regression_err, op
 if __name__ == '__main__':
     data_list_ = load_data_set('resource/ex00.txt')
     data_mat_ = mat(data_list_)
-    create_tree(data_mat_)
+    print(create_tree(data_mat_))
