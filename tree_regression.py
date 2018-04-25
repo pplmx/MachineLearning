@@ -30,12 +30,17 @@ def load_data_set(filename):  # general function to parse tab -delimited floats
 
 
 def bin_split_data_set(data_set, feature, value):
-    mat_0 = data_set[nonzero(data_set[:, feature] > value)[0], :][0]
-    mat_1 = data_set[nonzero(data_set[:, feature] <= value)[0], :][0]
+    # TODO
+    # before change: will get index 0 of array
+    # after change: not get index 0 of array
+    mat_0 = data_set[nonzero(data_set[:, feature] > value)[0], :]
+    mat_1 = data_set[nonzero(data_set[:, feature] <= value)[0], :]
     return mat_0, mat_1
 
 
 def regression_leaf(data_set):  # returns the value used for each leaf
+    # FIXME something wrong happened here
+    # FIXME TypeError: unsupported operand type(s) for /: 'map' and 'int'
     return mean(data_set[:, -1])
 
 
@@ -56,7 +61,10 @@ def choose_best_split(data_set, leaf_type=regression_leaf, err_type=regression_e
     best_idx = 0
     best_val = 0
     for feature_idx in range(n - 1):
-        for split_val in set(data_set[:, feature_idx]):
+        # TODO
+        # before change: data_set[:, feature_idx]
+        # after change: data_set[:, feature_idx].T.tolist()[0]
+        for split_val in set(data_set[:, feature_idx].T.tolist()[0]):
             mat_0, mat_1 = bin_split_data_set(data_set, feature_idx, split_val)
             if (shape(mat_0)[0] < tolerance_n) or (shape(mat_1)[0] < tolerance_n):
                 continue
