@@ -16,6 +16,8 @@
 5.测试算法: 使用测试数据上的R平方值来分析模型的效果
 6.使用算法: 使用训练出的树做预测,预测结果还可以用来做很多事情
 """
+import json
+
 from numpy import nonzero, mean, var, shape, inf, mat
 
 
@@ -100,6 +102,8 @@ def create_tree(data_mat, leaf_type=regression_leaf, err_type=regression_err, op
 
 
 if __name__ == '__main__':
-    data_list_ = load_data_set('resource/ex00.txt')
+    data_list_ = load_data_set('resource/ex0.txt')
     data_mat_ = mat(data_list_)
-    print(create_tree(data_mat_))
+    tree_ = create_tree(data_mat_)
+    json_ = json.dumps(tree_, indent=4)
+    print(json_)
