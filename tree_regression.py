@@ -106,4 +106,5 @@ if __name__ == '__main__':
     data_mat_ = mat(data_list_)
     tree_ = create_tree(data_mat_)
     json_ = json.dumps(tree_, indent=4)
+
     print(json_)
