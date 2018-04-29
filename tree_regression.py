@@ -18,7 +18,8 @@
 """
 import json
 
-from numpy import nonzero, mean, var, shape, inf, mat
+from numpy import nonzero, mean, var, shape, inf, mat, power, ones
+from scipy import linalg
 
 
 def load_data_set(filename):  # general function to parse tab -delimited floats
@@ -49,6 +50,26 @@ def regression_leaf(data_mat):  # returns the value used for each leaf
 
 def regression_err(data_mat):
     return var(data_mat[:, -1]) * shape(data_mat)[0]
+
+
+def linear_solve(data_set):
+    """
+    helper function used in two places
+    :param data_set:
+    :return:
+    """
+    m, n = shape(data_set)
+    x = mat(ones((m, n)))
+    # create a copy of data with 1 in 0th postion
+    y = mat(ones((m, 1)))
+    x[:, 1:n] = data_set[:, 0:n - 1]
+    y = data_set[:, -1]
+    x_t_x = x.T * x
+    if linalg.det(x_t_x) == 0:
+        raise NameError('This matrix is singular, cannot do inverse,\n\
+                try increasing the second value of ops')
+    ws = x_t_x.I * (x.T * y)
+    return ws, x, y
 
 
 def choose_best_split(data_mat, leaf_type=regression_leaf, err_type=regression_err, ops=(1, 4)):
@@ -101,10 +122,50 @@ def create_tree(data_mat, leaf_type=regression_leaf, err_type=regression_err, op
     return tree
 
 
+def is_tree(obj):
+    return type(obj).__name__ == 'dict'
+
+
+def get_mean(tree):
+    if is_tree(tree['right']):
+        tree['right'] = get_mean(tree['right'])
+    if is_tree(tree['left']):
+        tree['left'] = get_mean(tree['left'])
+    return (tree['left'] + tree['right']) / 2.0
+
+
+def prune(tree, test_data):
+    # if we have no test data collapse the tree
+    if shape(test_data)[0] == 0:
+        return get_mean(tree)
+    left_set, right_set = bin_split_data_set(test_data, tree['split_idx'], tree['split_val'])
+    if is_tree(tree['right']) or is_tree(tree['left']):
+        if is_tree(tree['left']):
+            tree['left'] = prune(tree['left'], left_set)
+        if is_tree(tree['right']):
+            tree['right'] = prune(tree['right'], right_set)
+    else:
+        # if they are now both leafs, see if we can merge them
+        err_no_merge = sum(power(left_set[:, 1] - tree['left'], 2)) + \
+                       sum(power(right_set[:, 1] - tree['right'], 2))
+        tree_mean = (tree['left'] + tree['right']) / 2.0
+        err_merge = sum(power(test_data[:, 1] - tree_mean, 2))
+        if err_merge < err_no_merge:
+            print('Merging')
+            return tree_mean
+        else:
+            return tree
+    return tree
+
+
 if __name__ == '__main__':
-    data_list_ = load_data_set('resource/ex0.txt')
+    data_list_ = load_data_set('resource/ex2.txt')
     data_mat_ = mat(data_list_)
-    tree_ = create_tree(data_mat_)
-    json_ = json.dumps(tree_, indent=4)
+    tree_ = create_tree(data_mat_, ops=(0, 1))
+
+    test_data_list_ = load_data_set('resource/ex2test.txt')
+    test_data_mat_ = mat(test_data_list_)
+    pruned_tree_ = prune(tree_, test_data_mat_)
+    json_ = json.dumps(pruned_tree_, indent=4)
 
     print(json_)
