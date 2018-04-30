@@ -60,8 +60,8 @@ def linear_solve(data_set):
     """
     m, n = shape(data_set)
     x = mat(ones((m, n)))
-    # create a copy of data with 1 in 0th postion
-    y = mat(ones((m, 1)))
+    # create a copy of data with 1 in 0th position
+    # y = mat(ones((m, 1)))
     x[:, 1:n] = data_set[:, 0:n - 1]
     y = data_set[:, -1]
     x_t_x = x.T * x
@@ -70,6 +70,17 @@ def linear_solve(data_set):
                 try increasing the second value of ops')
     ws = x_t_x.I * (x.T * y)
     return ws, x, y
+
+
+def model_leaf(data_set):
+    ws, x, y = linear_solve(data_set)
+    return ws
+
+
+def model_err(data_set):
+    ws, x, y = linear_solve(data_set)
+    y_hat = x * ws
+    return sum(power(y - y_hat, 2))
 
 
 def choose_best_split(data_mat, leaf_type=regression_leaf, err_type=regression_err, ops=(1, 4)):
@@ -159,13 +170,18 @@ def prune(tree, test_data):
 
 
 if __name__ == '__main__':
-    data_list_ = load_data_set('resource/ex2.txt')
+    # data_list_ = load_data_set('resource/ex2.txt')
+    # data_mat_ = mat(data_list_)
+    # tree_ = create_tree(data_mat_, ops=(0, 1))
+    #
+    # test_data_list_ = load_data_set('resource/ex2test.txt')
+    # test_data_mat_ = mat(test_data_list_)
+    # pruned_tree_ = prune(tree_, test_data_mat_)
+    # json_ = json.dumps(pruned_tree_, indent=4)
+    #
+    # print(json_)
+
+    data_list_ = load_data_set('resource/exp2.txt')
     data_mat_ = mat(data_list_)
-    tree_ = create_tree(data_mat_, ops=(0, 1))
-
-    test_data_list_ = load_data_set('resource/ex2test.txt')
-    test_data_mat_ = mat(test_data_list_)
-    pruned_tree_ = prune(tree_, test_data_mat_)
-    json_ = json.dumps(pruned_tree_, indent=4)
-
-    print(json_)
+    tree_ = create_tree(data_mat_, model_leaf, model_err, ops=(1, 10))
+    print(tree_)
