@@ -16,9 +16,8 @@
 5.测试算法: 使用测试数据上的R平方值来分析模型的效果
 6.使用算法: 使用训练出的树做预测,预测结果还可以用来做很多事情
 """
-import json
 
-from numpy import nonzero, mean, var, shape, inf, mat, power, ones
+from numpy import nonzero, mean, var, shape, inf, mat, power, ones, zeros
 from scipy import linalg
 
 
@@ -167,6 +166,40 @@ def prune(tree, test_data):
         else:
             return tree
     return tree
+
+
+def regression_tree_evaluation(model):
+    return float(model)
+
+
+def model_tree_evaluation(model, input_data):
+    n = shape(input_data)[1]
+    x = mat(ones((1, n + 1)))
+    x[:, 1:n + 1] = input_data
+    return float(x * model)
+
+
+def tree_forecast(tree, input_data, model_eval=regression_tree_evaluation):
+    if not is_tree(tree):
+        return model_eval(tree)
+    if input_data[tree['split_idx']] > tree['split_val']:
+        if is_tree(tree['left']):
+            return tree_forecast(tree['left'], input_data, model_eval)
+        else:
+            return model_eval(tree['left'])
+    else:
+        if is_tree(tree['right']):
+            return tree_forecast(tree['right'], input_data, model_eval)
+        else:
+            return model_eval(tree['right'])
+
+
+def create_forecast(tree, test_data, model_eval=regression_tree_evaluation):
+    m = len(test_data)
+    y_hat = mat(zeros((m, 1)))
+    for i in range(m):
+        y_hat[i, 0] = tree_forecast(tree, mat(test_data[i]), model_eval)
+    return y_hat
 
 
 if __name__ == '__main__':
