@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 # @author  : mystic
 # @date    : 2018/5/1 19:23
-from tkinter import Tk, Label, Entry, Button, IntVar, Checkbutton
+from tkinter import Tk, Label, Entry, Button, IntVar, Checkbutton, END
 
 import matplotlib
+
+matplotlib.use('TkAgg')
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from numpy import mat, arange
 
 import tree_regression
-
-matplotlib.use('TkAgg')
 
 
 def re_draw(tolerance_s, tolerance_n):
@@ -29,10 +30,31 @@ def re_draw(tolerance_s, tolerance_n):
         y_hat = tree_regression.create_forecast(my_tree, re_draw.test_data)
     re_draw.a.scatter(re_draw.raw_data[:, 0], re_draw.raw_data[:, 1], s=5)
     re_draw.a.plot(re_draw.test_data, y_hat, linewidth=2.0)
+    re_draw.canvas.show()
+
+
+# noinspection PyBroadException
+def get_input():
+    try:
+        tolerance_n = int(tol_n_entry.get())
+    except Exception:
+        tolerance_n = 10
+        print('enter Integer for tolerance_n')
+        tol_n_entry.delete(0, END)
+        tol_n_entry.insert(0, '10')
+    try:
+        tolerance_s = float(tol_s_entry.get())
+    except Exception:
+        tolerance_s = 1.0
+        print('enter Float for tolerance_s')
+        tol_s_entry.delete(0, END)
+        tol_s_entry.insert(0, '1.0')
+    return tolerance_n, tolerance_s
 
 
 def draw_new_tree():
-    pass
+    tol_n, tol_s = get_input()
+    re_draw(tol_s, tol_n)
 
 
 root = Tk()
