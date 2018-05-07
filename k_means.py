@@ -14,6 +14,7 @@
 6. 使用算法: 可以用于所希望的任何应用
             通常情况下, 簇质心可以代表整个簇的数据来作出决策
 """
+from numpy.linalg import linalg
 
 
 def load_data_set(filename):  # general function to parse tab -delimited floats
@@ -27,3 +28,13 @@ def load_data_set(filename):  # general function to parse tab -delimited floats
             flt_line = list(map(float, cur_line))  # map all elements to float()
             data_list.append(flt_line)
         return data_list
+
+
+def euclidean_distance(vector_a, vector_b):
+    # return sqrt(sum(power(vector_a - vector_b, 2)))
+    # The L2 norm is the Euclidean Distance
+    return linalg.norm(vector_a, vector_b)
+
+
+def rand_centroid(dataset, k):
+    pass
