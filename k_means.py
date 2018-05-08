@@ -14,6 +14,7 @@
 6. 使用算法: 可以用于所希望的任何应用
             通常情况下, 簇质心可以代表整个簇的数据来作出决策
 """
+from numpy import shape, zeros, mat, random, inf, nonzero, mean
 from numpy.linalg import linalg
 
 
@@ -36,5 +37,43 @@ def euclidean_distance(vector_a, vector_b):
     return linalg.norm(vector_a, vector_b)
 
 
-def rand_centroid(dataset, k):
-    pass
+def rand_centroid(data_set, k):
+    n = shape(data_set)[1]
+    centroid_mat = mat(zeros((k, n)))
+    # create random cluster centers, within bounds of each dimension
+    for j in range(n):
+        min_j = min(data_set[:, j])
+        range_j = float(max(data_set[:, j]) - min_j)
+        centroid_mat[:, j] = min_j + range_j * random.rand(k, 1)
+    return centroid_mat
+
+
+def k_means(data_set, k, distance_measure=euclidean_distance, create_centroid=rand_centroid):
+    m = shape(data_set)[0]
+    # create mat to assign data points
+    # to a centroid, also holds SE of each point
+    cluster_assignment = mat(zeros((m, 2)))
+    centroid_mat = create_centroid(data_set, k)
+    cluster_changed = True
+    while cluster_changed:
+        cluster_changed = False
+        # for each data point assign it to the closest centroid
+        for i in range(m):
+            min_dist = inf
+            min_idx = -1
+            for j in range(k):
+                dist_j2i = distance_measure(centroid_mat[j, :], data_set[i, :])
+                if dist_j2i < min_dist:
+                    min_dist = dist_j2i
+                    min_idx = j
+            if cluster_assignment[i, 0] != min_idx:
+                cluster_changed = True
+            cluster_assignment[i, :] = min_idx, min_dist ** 2
+        print(centroid_mat)
+        # recalculate centroids
+        for cent in range(k):
+            # get all the point in this cluster
+            points_in_cluster = data_set[nonzero(cluster_assignment[:, 0].A == cent)[0]]
+            # assign centroid to mean
+            centroid_mat[cent, :] = mean(points_in_cluster, axis=0)
+    return centroid_mat, cluster_assignment
