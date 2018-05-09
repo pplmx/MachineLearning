@@ -34,7 +34,7 @@ def load_data_set(filename):  # general function to parse tab -delimited floats
 def euclidean_distance(vector_a, vector_b):
     # return sqrt(sum(power(vector_a - vector_b, 2)))
     # The L2 norm is the Euclidean Distance
-    return linalg.norm(vector_a, vector_b)
+    return linalg.norm(vector_a - vector_b)
 
 
 def rand_centroid(data_set, k):
@@ -77,3 +77,11 @@ def k_means(data_set, k, distance_measure=euclidean_distance, create_centroid=ra
             # assign centroid to mean
             centroid_mat[cent, :] = mean(points_in_cluster, axis=0)
     return centroid_mat, cluster_assignment
+
+
+if __name__ == '__main__':
+    data_mat_ = mat(load_data_set('resource/testSet.txt'))
+    my_centroid_mat_, cluster_assignment_ = k_means(data_mat_, 4)
+    print(my_centroid_mat_)
+    print('=======================================')
+    print(cluster_assignment_)
