@@ -79,6 +79,21 @@ def k_means(data_set, k, distance_measure=euclidean_distance, create_centroid=ra
     return centroid_mat, cluster_assignment
 
 
+def binary_k_means(data_set, k, distance_measure=euclidean_distance):
+    m = shape(data_set)[0]
+    # create mat to assign data points
+    # to a centroid, also holds SE of each point
+    cluster_assignment = mat(zeros((m, 2)))
+    centroid = list(mean(data_set, axis=0))[0]
+    # create a list with one centroid
+    centroid_list = list(centroid)
+    # calc initial Error
+    for j in range(m):
+        cluster_assignment[j, 1] = distance_measure(mat(centroid_list), data_set[j, :])**2
+    while len(centroid_list) < k:
+        pass
+
+
 if __name__ == '__main__':
     data_mat_ = mat(load_data_set('resource/testSet.txt'))
     my_centroid_mat_, cluster_assignment_ = k_means(data_mat_, 4)
