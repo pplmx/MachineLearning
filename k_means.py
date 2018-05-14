@@ -93,8 +93,10 @@ def binary_k_means(data_set, k, distance_measure=euclidean_distance):
     while len(centroid_list) < k:
         lowest_sse = inf
         for i in range(len(centroid_list)):
+            # get the data points currently in cluster i
             points_in_current_cluster = data_set[nonzero(cluster_assignment[:, 0].A == i)[0], :]
             centroid_mat, split_cluster_assignment = k_means(points_in_current_cluster, 2, distance_measure)
+            # compare the SSE to the current minimum
             sse_split = sum(split_cluster_assignment[:, 1])
             see_not_split = sum(cluster_assignment[nonzero(cluster_assignment[:, 0].A != i)[0], 1])
             print('SSE_Split, and not split: ', sse_split, see_not_split)
