@@ -92,15 +92,33 @@ def binary_k_means(data_set, k, distance_measure=euclidean_distance):
         cluster_assignment[j, 1] = distance_measure(mat(centroid_list), data_set[j, :]) ** 2
     while len(centroid_list) < k:
         lowest_sse = inf
+        best_centroid2split = None
+        best_new_centroid = None
+        best_cluster_assignment = None
         for i in range(len(centroid_list)):
             # get the data points currently in cluster i
             points_in_current_cluster = data_set[nonzero(cluster_assignment[:, 0].A == i)[0], :]
             centroid_mat, split_cluster_assignment = k_means(points_in_current_cluster, 2, distance_measure)
             # compare the SSE to the current minimum
             sse_split = sum(split_cluster_assignment[:, 1])
-            see_not_split = sum(cluster_assignment[nonzero(cluster_assignment[:, 0].A != i)[0], 1])
-            print('SSE_Split, and not split: ', sse_split, see_not_split)
-        pass
+            sse_not_split = sum(cluster_assignment[nonzero(cluster_assignment[:, 0].A != i)[0], 1])
+            print('SSE_Split, and not split: ', sse_split, sse_not_split)
+            if sse_split + sse_not_split < lowest_sse:
+                best_centroid2split = i
+                best_new_centroid = centroid_mat
+                best_cluster_assignment = split_cluster_assignment.copy()
+                lowest_sse = sse_split + sse_not_split
+        # change 1 to 3,4, or whatever
+        best_cluster_assignment[nonzero(best_cluster_assignment[:, 0].A == 1)[0], 0] = len(centroid_list)
+        best_cluster_assignment[nonzero(best_cluster_assignment[:, 0].A == 0)[0], 0] = best_centroid2split
+        print('The best_centroid2split is: ', best_centroid2split)
+        print('The length of best_cluster_assignment is: ', len(best_cluster_assignment))
+        # replace a centroid with two best centroids
+        centroid_list[best_centroid2split] = best_new_centroid[0, :]
+        centroid_list.append(best_new_centroid[1, :])
+        # reassign new clusters, and SSE
+        cluster_assignment[nonzero(cluster_assignment[:, 0].A == best_centroid2split)[0], :] = best_cluster_assignment
+    return mat(centroid_list), cluster_assignment
 
 
 if __name__ == '__main__':
