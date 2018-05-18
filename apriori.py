@@ -3,3 +3,5 @@
 # @author  : mystic
 # @date    : 2018/5/17 21:22
 
+if __name__ == '__main__':
+    pass
