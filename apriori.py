@@ -114,6 +114,16 @@ def rules_from_consequence(frequent_set, h, support_data, brl, min_confidence=0.
             rules_from_consequence(frequent_set, hmp1, support_data, brl, min_confidence)
 
 
+def print_rules(rule_list, item_meaning):
+    for ruleTup in rule_list:
+        for item in ruleTup[0]:
+            print(item_meaning[item])
+        print("           -------->")
+        for item in ruleTup[1]:
+            print(item_meaning[item])
+        print("confidence: %f\n" % ruleTup[2])
+
+
 if __name__ == '__main__':
     print('start apriori learning')
-    pass
+pass
