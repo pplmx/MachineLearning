@@ -42,7 +42,44 @@ def create_tree(data_set, min_support=1):
     :return:
     """
     header_table = {}
-    # go over dataSet twice
+    # go over data_set twice
     for transaction in data_set:
         for item in transaction:
             header_table[item] = header_table.get(item, 0) + data_set[transaction]
+    for k in header_table.keys():  # remove items not meeting min_support
+        if header_table[k] < min_support:
+            del (header_table[k])
+    frequent_item_set = set(header_table.keys())
+    if len(frequent_item_set) == 0:
+        return None, None  # if no items meet min support -->get out
+    for k in header_table:
+        header_table[k] = [header_table[k], None]  # reformat header_table to use Node link 
+    ret_tree = Tree('Null Set', 1, None)  # create tree
+    for transaction_set, count in data_set.items():  # go through data_set 2nd time
+        local_dict = {}
+        for item in transaction_set:  # put transaction items in order
+            if item in frequent_item_set:
+                local_dict[item] = header_table[item][0]
+        if len(local_dict) > 0:
+            ordered_items = [v[0] for v in sorted(local_dict.items(), key=lambda p: p[1], reverse=True)]
+            update_tree(ordered_items, ret_tree, header_table, count)  # populate tree with ordered frequent item set
+    return ret_tree, header_table  # return tree and header table
+
+
+def update_tree(items, input_tree, header_table, count):
+    if items[0] in input_tree.children:  # check if orderedItems[0] in retTree.children
+        input_tree.children[items[0]].inc(count)  # increment count
+    else:  # add items[0] to inTree.children
+        input_tree.children[items[0]] = Tree(items[0], count, input_tree)
+        if header_table[items[0]][1] is None:  # update header table
+            header_table[items[0]][1] = input_tree.children[items[0]]
+        else:
+            update_header(header_table[items[0]][1], input_tree.children[items[0]])
+    if len(items) > 1:  # call updateTree() with remaining ordered items
+        update_tree(items[1::], input_tree.children[items[0]], header_table, count)
+
+
+def update_header(node2test, target_node):  # this version does not use recursion
+    while node2test.nodeLink is not None:  # Do not use recursion to traverse a linked list!
+        node2test = node2test.nodeLink
+    node2test.nodeLink = target_node
