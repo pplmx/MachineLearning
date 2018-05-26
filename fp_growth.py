@@ -125,8 +125,8 @@ def load_simple_data():
     return simple_data
 
 
-def create_initial_set(dataSet):
+def create_initial_set(data_set):
     ret_dict = {}
-    for trans in dataSet:
+    for trans in data_set:
         ret_dict[frozenset(trans)] = 1
     return ret_dict
