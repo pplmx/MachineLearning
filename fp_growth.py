@@ -83,3 +83,50 @@ def update_header(node2test, target_node):  # this version does not use recursio
     while node2test.nodeLink is not None:  # Do not use recursion to traverse a linked list!
         node2test = node2test.nodeLink
     node2test.nodeLink = target_node
+
+
+def ascend_tree(leaf_node, prefix_path):  # ascends from leaf node to root
+    if leaf_node.parent is not None:
+        prefix_path.append(leaf_node.name)
+        ascend_tree(leaf_node.parent, prefix_path)
+
+
+def find_prefix_path(tree_node):  # treeNode comes from header table
+    condition_pattern = {}
+    while tree_node is not None:
+        prefix_path = []
+        ascend_tree(tree_node, prefix_path)
+        if len(prefix_path) > 1:
+            condition_pattern[frozenset(prefix_path[1:])] = tree_node.count
+        tree_node = tree_node.nodeLink
+    return condition_pattern
+
+
+def mine_tree(header_table, min_support, prefix, frequent_item_list):
+    big_l = [v[0] for v in sorted(header_table.items(), key=lambda p: p[1])]  # (sort header table)
+    for basePat in big_l:  # start from bottom of header table
+        new_frequent_set = prefix.copy()
+        new_frequent_set.add(basePat)
+        frequent_item_list.append(new_frequent_set)
+        condition_pattern_bases = find_prefix_path(header_table[basePat][1])
+        # 2. construct condition FP-tree from condition pattern base
+        my_condition_tree, my_head = create_tree(condition_pattern_bases, min_support)
+        if my_head is not None:  # 3. mine condition FP-tree
+            mine_tree(my_condition_tree, my_head, min_support, new_frequent_set, frequent_item_list)
+
+
+def load_simple_data():
+    simple_data = [['r', 'z', 'h', 'j', 'p'],
+                   ['z', 'y', 'x', 'w', 'v', 'u', 't', 's'],
+                   ['z'],
+                   ['r', 'x', 'n', 'o', 's'],
+                   ['y', 'r', 'x', 'z', 'q', 't', 'p'],
+                   ['y', 'z', 'x', 'e', 'q', 's', 't', 'm']]
+    return simple_data
+
+
+def create_initial_set(dataSet):
+    ret_dict = {}
+    for trans in dataSet:
+        ret_dict[frozenset(trans)] = 1
+    return ret_dict
