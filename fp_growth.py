@@ -46,7 +46,8 @@ def create_tree(data_set, min_support=1):
     for transaction in data_set:
         for item in transaction:
             header_table[item] = header_table.get(item, 0) + data_set[transaction]
-    for k in header_table.keys():  # remove items not meeting min_support
+
+    for k in list(header_table.keys()):  # remove items not meeting min_support
         if header_table[k] < min_support:
             del (header_table[k])
     frequent_item_set = set(header_table.keys())
@@ -68,7 +69,7 @@ def create_tree(data_set, min_support=1):
 
 def update_tree(items, input_tree, header_table, count):
     if items[0] in input_tree.children:  # check if orderedItems[0] in retTree.children
-        input_tree.children[items[0]].inc(count)  # increment count
+        input_tree.children[items[0]].increase(count)  # increment count
     else:  # add items[0] to inTree.children
         input_tree.children[items[0]] = Tree(items[0], count, input_tree)
         if header_table[items[0]][1] is None:  # update header table
@@ -112,7 +113,7 @@ def mine_tree(header_table, min_support, prefix, frequent_item_list):
         # 2. construct condition FP-tree from condition pattern base
         my_condition_tree, my_head = create_tree(condition_pattern_bases, min_support)
         if my_head is not None:  # 3. mine condition FP-tree
-            mine_tree(my_condition_tree, my_head, min_support, new_frequent_set, frequent_item_list)
+            mine_tree(my_head, min_support, new_frequent_set, frequent_item_list)
 
 
 def load_simple_data():
@@ -130,3 +131,14 @@ def create_initial_set(data_set):
     for trans in data_set:
         ret_dict[frozenset(trans)] = 1
     return ret_dict
+
+
+if __name__ == '__main__':
+    with open('resource/kosarak.dat') as fr:
+        parsed_data_ = [line.split() for line in fr.readlines()]
+        initial_set_ = create_initial_set(parsed_data_)
+        fp_tree_, header_tab_ = create_tree(initial_set_, 100000)
+        frequent_list_ = []
+        mine_tree(header_tab_, 100000, set([]), frequent_list_)
+        print(len(frequent_list_))
+        print(frequent_list_)
