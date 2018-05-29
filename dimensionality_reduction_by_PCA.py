@@ -75,7 +75,9 @@ if __name__ == '__main__':
     print(sort_idx_[: -4: -1])
     """
         sort_idx[start: end: n]
-        n的正负表示是否reverse, n的值,表示steps
+        The positive and negative of n 
+            indicate whether it needs reverse
+        the value of n, which means steps
     """
     data_mat_ = load_data_set('resource/testSet_pca.txt')
     low_dimension_mat_, reconstruct_mat_ = pca(data_mat_, 1)
