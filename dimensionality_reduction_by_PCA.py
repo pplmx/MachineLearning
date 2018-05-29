@@ -3,7 +3,7 @@
 # @author  : mystic
 # @date    : 2018/5/27 16:35
 
-from numpy import mat, mean, cov, linalg
+from numpy import mat, mean, cov, linalg, argsort, shape
 
 """
 三种降维技术:
@@ -43,8 +43,46 @@ def pca(data_mat, top_n_features=9999999):
     :param top_n_features: default return all
     :return: need to return top_n_features eigen val
     """
-    mean_vals = mean(data_mat, axis=0)
-    mean_removed = data_mat - mean_vals
+    mean_val_mat = mean(data_mat, axis=0)
+    mean_removed = data_mat - mean_val_mat
     cov_arr = cov(mean_removed, rowvar=False)
-    eigen_vals, eigen_vectors = linalg.eig(mat(cov_arr))
-    pass
+    eigen_val_arr, eigen_vector_mat = linalg.eig(mat(cov_arr))
+    # ascending order, return idx,which doesn't change origin array
+    eigen_val_idx_arr = argsort(eigen_val_arr)
+    # Get the top N largest eigen vectors
+    eigen_val_idx_arr = eigen_val_idx_arr[:-(top_n_features + 1):-1]
+    red_eigen_vector_mat = eigen_vector_mat[:, eigen_val_idx_arr]
+    low_dimension_data_mat = mean_removed * red_eigen_vector_mat
+    # if returned all eigen vectors, reconstructed mat should be the same as input data_mat
+    reconstruct_mat = (low_dimension_data_mat * red_eigen_vector_mat.T) + mean_val_mat
+    return low_dimension_data_mat, reconstruct_mat
+
+
+def plt_fig(data_mat, reconstruct_mat):
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(data_mat[:, 0].flatten().A[0], data_mat[:, 1].flatten().A[0], marker='^', s=90)
+    ax.scatter(reconstruct_mat[:, 0].flatten().A[0], reconstruct_mat[:, 1].flatten().A[0], marker='o', s=50, c='red')
+    plt.show()
+
+
+if __name__ == '__main__':
+    arr_ = [1, 4, 7671, 123, 87678, 2, 54, 87]
+    sort_idx_ = argsort(arr_)
+    print(arr_)
+    print(sort_idx_)
+    print(sort_idx_[: -4: -1])
+    """
+        sort_idx[start: end: n]
+        n的正负表示是否reverse, n的值,表示steps
+    """
+    data_mat_ = load_data_set('resource/testSet_pca.txt')
+    low_dimension_mat_, reconstruct_mat_ = pca(data_mat_, 1)
+    plt_fig(data_mat_, reconstruct_mat_)
+    print(shape(data_mat_))
+    print('=============================')
+    print(shape(low_dimension_mat_))
+    print(shape(reconstruct_mat_))
+    print(data_mat_)
+    print(reconstruct_mat_)
