@@ -67,6 +67,10 @@ def plt_fig(data_mat, reconstruct_mat):
     plt.show()
 
 
+def replace_nan_with_mean():
+    pass
+
+
 if __name__ == '__main__':
     arr_ = [1, 4, 7671, 123, 87678, 2, 54, 87]
     sort_idx_ = argsort(arr_)
