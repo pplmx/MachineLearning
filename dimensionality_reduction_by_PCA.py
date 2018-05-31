@@ -3,7 +3,7 @@
 # @author  : mystic
 # @date    : 2018/5/27 16:35
 
-from numpy import mat, mean, cov, linalg, argsort, shape
+from numpy import mat, mean, cov, linalg, argsort, shape, nonzero, isnan
 
 """
 三种降维技术:
@@ -68,7 +68,12 @@ def plt_fig(data_mat, reconstruct_mat):
 
 
 def replace_nan_with_mean():
-    pass
+    data_mat = load_data_set('resource/secom.data', ' ')
+    num_feature = shape(data_mat)[1]
+    for i in range(num_feature):
+        mean_val = mean(data_mat[nonzero(~isnan(data_mat[:, i].A))[0], i])  # values that are not NaN (a number)
+        data_mat[nonzero(isnan(data_mat[:, i].A))[0], i] = mean_val  # set NaN values to mean
+    return data_mat
 
 
 if __name__ == '__main__':
