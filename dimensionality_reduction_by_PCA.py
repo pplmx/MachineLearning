@@ -58,15 +58,6 @@ def pca(data_mat, top_n_features=9999999):
     return low_dimension_data_mat, reconstruct_mat
 
 
-def plt_fig(data_mat, reconstruct_mat):
-    import matplotlib.pyplot as plt
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.scatter(data_mat[:, 0].flatten().A[0], data_mat[:, 1].flatten().A[0], marker='^', s=90)
-    ax.scatter(reconstruct_mat[:, 0].flatten().A[0], reconstruct_mat[:, 1].flatten().A[0], marker='o', s=50, c='red')
-    plt.show()
-
-
 def replace_nan_with_mean():
     data_mat = load_data_set('resource/secom.data', ' ')
     num_feature = shape(data_mat)[1]
@@ -74,6 +65,15 @@ def replace_nan_with_mean():
         mean_val = mean(data_mat[nonzero(~isnan(data_mat[:, i].A))[0], i])  # values that are not NaN (a number)
         data_mat[nonzero(isnan(data_mat[:, i].A))[0], i] = mean_val  # set NaN values to mean
     return data_mat
+
+
+def plt_fig(data_mat, reconstruct_mat):
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(data_mat[:, 0].flatten().A[0], data_mat[:, 1].flatten().A[0], marker='^', s=90)
+    ax.scatter(reconstruct_mat[:, 0].flatten().A[0], reconstruct_mat[:, 1].flatten().A[0], marker='o', s=50, c='red')
+    plt.show()
 
 
 if __name__ == '__main__':
