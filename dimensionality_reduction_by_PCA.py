@@ -76,6 +76,16 @@ def plt_fig(data_mat, reconstruct_mat):
     plt.show()
 
 
+def plg_fig_semiconductor(variance_percentage):
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(range(1, 21), variance_percentage[:20], marker='^')
+    plt.xlabel('Principal Component Number')
+    plt.ylabel('Percentage of Variance')
+    plt.show()
+
+
 if __name__ == '__main__':
     arr_ = [1, 4, 7671, 123, 87678, 2, 54, 87]
     sort_idx_ = argsort(arr_)
@@ -91,9 +101,17 @@ if __name__ == '__main__':
     data_mat_ = load_data_set('resource/testSet_pca.txt')
     low_dimension_mat_, reconstruct_mat_ = pca(data_mat_, 1)
     plt_fig(data_mat_, reconstruct_mat_)
-    print(shape(data_mat_))
-    print('=============================')
-    print(shape(low_dimension_mat_))
-    print(shape(reconstruct_mat_))
-    print(data_mat_)
-    print(reconstruct_mat_)
+    # ==============================================================
+    data_mat_ = replace_nan_with_mean()
+    mean_val_mat_ = mean(data_mat_, axis=0)
+    mean_removed = data_mat_ - mean_val_mat_
+    cov_arr_ = cov(mean_removed, rowvar=False)
+    eigen_val_arr_, eigen_vector_mat_ = linalg.eig(mat(cov_arr_))
+    # ascending order, return idx,which doesn't change origin array
+    eigen_val_idx_arr_ = argsort(eigen_val_arr_)
+    # Get the top N largest eigen vectors
+    eigen_val_idx_arr_ = eigen_val_idx_arr_[::-1]
+    sorted_eigen_val_arr_ = eigen_val_arr_[eigen_val_idx_arr_]
+    total_ = sum(sorted_eigen_val_arr_)
+    variance_percentage_ = sorted_eigen_val_arr_ / total_ * 100
+    plg_fig_semiconductor(variance_percentage_)
