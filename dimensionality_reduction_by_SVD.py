@@ -35,3 +35,5 @@ def load_external_data2():
             [1, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0]]
 
 
+def euclidean_similar(input_a, input_b):
+    return 1.0 / (1.0 + linalg.norm(input_a - input_b))
