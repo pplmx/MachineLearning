@@ -8,7 +8,7 @@
 缺点: 数据的转换可能难以理解
 适用数据类型: 数值型数据
 """
-from numpy import linalg
+from numpy import linalg, corrcoef, shape, mat, eye, nonzero, logical_and
 
 
 def load_external_data():
@@ -35,5 +35,71 @@ def load_external_data2():
             [1, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0]]
 
 
-def euclidean_similar(input_a, input_b):
+def euclidean_similarity(input_a, input_b):
     return 1.0 / (1.0 + linalg.norm(input_a - input_b))
+
+
+def pearson_correlation_coefficient(input_a, input_b):
+    if len(input_a) < 3:
+        return 1.0
+    return 0.5 + 0.5 * corrcoef(input_a, input_b, rowvar=False)[0][1]
+
+
+def cosine_similarity(input_a, input_b):
+    num = float(input_a.T * input_b)
+    denominator = linalg.norm(input_a) * linalg.norm(input_b)
+    return 0.5 + 0.5 * (num / denominator)
+
+
+def stand_estimate(data_mat, user, similarity_measure, item):
+    n = shape(data_mat)[1]
+    similarity_total = 0.0
+    rate_similarity_total = 0.0
+    for j in range(n):
+        user_rating = data_mat[user, j]
+        if user_rating == 0:
+            continue
+        overlap = nonzero(logical_and(data_mat[:, item].A > 0, data_mat[:, j].A > 0))[0]
+        if len(overlap) == 0:
+            similarity = 0
+        else:
+            similarity = similarity_measure(data_mat[overlap, item], data_mat[overlap, j])
+        print('the %d and %d similarity is: %f' % (item, j, similarity))
+        similarity_total += similarity
+        rate_similarity_total += similarity * user_rating
+    if similarity_total == 0:
+        return 0
+    else:
+        return rate_similarity_total / similarity_total
+
+
+def svd_estimate(data_mat, user, similarity_measure, item):
+    n = shape(data_mat)[1]
+    similarity_total = 0.0
+    rate_similarity_total = 0.0
+    u, sigma, v_t = linalg.svd(data_mat)
+    sig4 = mat(eye(4) * sigma[:4])  # arrange Sig4 into a diagonal matrix
+    x_formed_items = data_mat.T * u[:, :4] * sig4.I  # create transformed items
+    for j in range(n):
+        user_rating = data_mat[user, j]
+        if user_rating == 0 or j == item:
+            continue
+        similarity = similarity_measure(x_formed_items[item, :].T, x_formed_items[j, :].T)
+        print('the %d and %d similarity is: %f' % (item, j, similarity))
+        similarity_total += similarity
+        rate_similarity_total += similarity * user_rating
+    if similarity_total == 0:
+        return 0
+    else:
+        return rate_similarity_total / similarity_total
+
+
+def recommend(data_mat, user, n=3, similarity_measure=cosine_similarity, estimate_method=stand_estimate):
+    unrated_items = nonzero(data_mat[user, :].A == 0)[1]  # find unrated items
+    if len(unrated_items) == 0:
+        return 'you rated everything'
+    item_scores = []
+    for item in unrated_items:
+        estimated_score = estimate_method(data_mat, user, similarity_measure, item)
+        item_scores.append((item, estimated_score))
+    return sorted(item_scores, key=lambda jj: jj[1], reverse=True)[:n]
