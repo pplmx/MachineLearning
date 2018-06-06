@@ -8,7 +8,7 @@
 缺点: 数据的转换可能难以理解
 适用数据类型: 数值型数据
 """
-from numpy import linalg, corrcoef, shape, mat, eye, nonzero, logical_and
+from numpy import linalg, corrcoef, shape, mat, eye, nonzero, logical_and, zeros
 
 
 def load_external_data():
@@ -103,3 +103,32 @@ def recommend(data_mat, user, n=3, similarity_measure=cosine_similarity, estimat
         estimated_score = estimate_method(data_mat, user, similarity_measure, item)
         item_scores.append((item, estimated_score))
     return sorted(item_scores, key=lambda jj: jj[1], reverse=True)[:n]
+
+
+def print_matrix(input_matrix, thresh=0.8):
+    for i in range(32):
+        for k in range(32):
+            if float(input_matrix[i, k]) > thresh:
+                print(1)
+            else:
+                print(0)
+        print('')
+
+
+def image_compress(num_s_v=3, thresh=0.8):
+    myl = []
+    for line in open('0_5.txt').readlines():
+        new_row = []
+        for i in range(32):
+            new_row.append(int(line[i]))
+        myl.append(new_row)
+    my_mat = mat(myl)
+    print("****original matrix******")
+    print_matrix(my_mat, thresh)
+    u, sigma, v_t = linalg.svd(my_mat)
+    sig_recon = mat(zeros((num_s_v, num_s_v)))
+    for k in range(num_s_v):  # construct diagonal matrix from vector
+        sig_recon[k, k] = sigma[k]
+    recon_mat = u[:, :num_s_v] * sig_recon * v_t[:num_s_v, :]
+    print("****reconstructed matrix using %d singular values******" % num_s_v)
+    print_matrix(recon_mat, thresh)
