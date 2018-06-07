@@ -117,7 +117,7 @@ def print_matrix(input_matrix, thresh=0.8):
 
 def image_compress(num_s_v=3, thresh=0.8):
     myl = []
-    for line in open('0_5.txt').readlines():
+    for line in open('resource/0_5.txt').readlines():
         new_row = []
         for i in range(32):
             new_row.append(int(line[i]))
