@@ -132,3 +132,7 @@ def image_compress(num_s_v=3, thresh=0.8):
     recon_mat = u[:, :num_s_v] * sig_recon * v_t[:num_s_v, :]
     print("****reconstructed matrix using %d singular values******" % num_s_v)
     print_matrix(recon_mat, thresh)
+
+
+if __name__ == '__main__':
+    pass
