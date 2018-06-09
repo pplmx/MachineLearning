@@ -228,7 +228,7 @@ def img2vector(filename):
     for i in range(32):
         line = fr.readline()
         for j in range(32):
-            return_vector[0, 32*i+j] = int(line[j])
+            return_vector[0, 32 * i + j] = int(line[j])
     return return_vector
 
 
@@ -263,7 +263,7 @@ def handwriting_class_test():
         if classifier_result != class_num_str:
             error_count += 1.0
     print('The total number of errors is: %d' % error_count)
-    print('The total error rate is: %f' % (error_count/length))
+    print('The total error rate is: %f' % (error_count / length))
 
 
 if __name__ == '__main__':
