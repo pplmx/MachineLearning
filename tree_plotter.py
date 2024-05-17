@@ -4,22 +4,23 @@
 # @author  : mystic
 # @date    : 2017/11/18 21:52
 """
-    树绘制器
+树绘制器
 """
+
 from matplotlib import pyplot as plt
 
 """
     boxstyle是文本框的类型,sawtooth是锯齿形,fc是边框线的粗细
     下面的字典定义也可写作 decision_node={boxstyle:'sawtooth',fc:'0.8'} 
 """
-decision_node = dict(boxstyle='sawtooth', fc='0.8')
-leaf_node = dict(boxstyle='round4', fc='0.8')
-arrow_args = dict(arrowstyle='<-')
+decision_node = dict(boxstyle="sawtooth", fc="0.8")
+leaf_node = dict(boxstyle="round4", fc="0.8")
+arrow_args = dict(arrowstyle="<-")
 ax1 = None
-offset_x = 0.
-offset_y = 0.
-total_width = 0.
-total_depth = 0.
+offset_x = 0.0
+offset_y = 0.0
+total_width = 0.0
+total_depth = 0.0
 
 
 def get_num_leafs(my_tree):
@@ -39,7 +40,7 @@ def get_num_leafs(my_tree):
     # 获取分支点的下层结构(子树或叶节点)
     second_dict = my_tree[first_str]
     for key in second_dict.keys():
-        if type(second_dict[key]).__name__ == 'dict':
+        if type(second_dict[key]).__name__ == "dict":
             # 如果是dict,表示下面依然是棵子树,故需要加上子树的叶节点个数
             num_leafs += get_num_leafs(second_dict[key])
         else:
@@ -53,7 +54,7 @@ def get_tree_depth(my_tree):
     first_str = list(my_tree.keys())[0]
     second_dict = my_tree[first_str]
     for key in second_dict.keys():
-        if type(second_dict[key]).__name__ == 'dict':
+        if type(second_dict[key]).__name__ == "dict":
             this_depth = 1 + int(get_tree_depth(second_dict[key]))
         else:
             this_depth = 1
@@ -71,9 +72,17 @@ def plot_node(node_txt, center_coordinate, parent_coordinate, node_type):
     :param node_type: 节点类型
     :return:
     """
-    ax1.annotate(node_txt, xy=parent_coordinate, xycoords='axes fraction', xytext=center_coordinate,
-                 textcoords='axes fraction', va='center', ha='center', bbox=node_type,
-                 arrowprops=arrow_args)
+    ax1.annotate(
+        node_txt,
+        xy=parent_coordinate,
+        xycoords="axes fraction",
+        xytext=center_coordinate,
+        textcoords="axes fraction",
+        va="center",
+        ha="center",
+        bbox=node_type,
+        arrowprops=arrow_args,
+    )
 
 
 def plot_mid_text(center_coordinate, parent_coordinate, txt_str):
@@ -104,22 +113,24 @@ def plot_tree(my_tree, parent_coordinate, node_txt):
     second_dict = my_tree[first_str]
     offset_y = offset_y - 1.0 / total_depth
     for key in second_dict.keys():
-        if type(second_dict[key]).__name__ == 'dict':
+        if type(second_dict[key]).__name__ == "dict":
             # 递归绘制子树
             plot_tree(second_dict[key], center_coordinate, str(key))
         else:
             offset_x = offset_x + 1.0 / total_width
             # 绘制叶节点
-            plot_node(second_dict[key], (offset_x, offset_y), center_coordinate, leaf_node)
+            plot_node(
+                second_dict[key], (offset_x, offset_y), center_coordinate, leaf_node
+            )
             plot_mid_text((offset_x, offset_y), center_coordinate, str(key))
     offset_y = offset_y + 1.0 / total_depth
 
 
 def create_plot(in_tree):
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-    plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+    plt.rcParams["font.sans-serif"] = ["SimHei"]  # 用来正常显示中文标签
+    plt.rcParams["axes.unicode_minus"] = False  # 用来正常显示负号
     # 定义一块画布,背景为白色
-    figure = plt.figure(1, facecolor='white')
+    figure = plt.figure(1, facecolor="white")
     # 将画布清空
     figure.clf()
     axprops = dict(xticks=[], yticks=[])
@@ -131,7 +142,7 @@ def create_plot(in_tree):
     total_depth = get_tree_depth(in_tree)
     offset_x = -0.5 / total_width
     offset_y = 1.0
-    plot_tree(in_tree, (0.5, 1.0), '')
+    plot_tree(in_tree, (0.5, 1.0), "")
     plt.show()
 
 
@@ -142,13 +153,18 @@ def retrieve_tree(i):
     :return:
     """
     list_trees = [
-        {'no surfacing': {0: 'no', 1: {'flippers': {0: 'no', 1: 'yes'}}}},
-        {'no surfacing': {0: 'no', 1: {'flippers': {0: {'head': {0: 'no', 1: 'yes'}}, 1: 'no'}}}}
+        {"no surfacing": {0: "no", 1: {"flippers": {0: "no", 1: "yes"}}}},
+        {
+            "no surfacing": {
+                0: "no",
+                1: {"flippers": {0: {"head": {0: "no", 1: "yes"}}, 1: "no"}},
+            }
+        },
     ]
     return list_trees[i]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # create_plot()
     test_tree = retrieve_tree(1)
     # print(get_num_leafs(test_tree))

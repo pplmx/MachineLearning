@@ -9,10 +9,10 @@ def load_data_set(filename):
     data_list = []
     label_list = []
     with open(filename) as fr:
-        num_feature = len(fr.readline().split('\t'))
+        num_feature = len(fr.readline().split("\t"))
         for line in fr.readlines():
             line_list = []
-            current_line = line.strip().split('\t')
+            current_line = line.strip().split("\t")
             for i in range(num_feature - 1):
                 line_list.append(float(current_line[i]))
             data_list.append(line_list)
@@ -26,7 +26,7 @@ def standard_regression(x_list, y_list):
     x_t_x = x_mat.T * x_mat
     # determinant cannot be 0
     if linalg.det(x_t_x) == 0.0:
-        print('This matrix is singular, cannot do inverse.')
+        print("This matrix is singular, cannot do inverse.")
         return
     ws = x_t_x.I * (x_mat.T * y_mat)
     # or invoke function in linalg, to solve unknown matrix
@@ -43,10 +43,10 @@ def locally_weighed_linear_regression(test_point, x_list, y_list, k=1.0):
     weight_mat = mat(eye(m))
     for j in range(m):
         differ_mat = test_point - x_mat[j, :]
-        weight_mat[j, j] = exp(differ_mat * differ_mat.T / (-2.0 * k ** 2))
+        weight_mat[j, j] = exp(differ_mat * differ_mat.T / (-2.0 * k**2))
     x_t_x = x_mat.T * (weight_mat * x_mat)
     if linalg.det(x_t_x) == 0.0:
-        print('This matrix is singular, cannot do inverse.')
+        print("This matrix is singular, cannot do inverse.")
         return
     ws = x_t_x.I * (x_mat.T * (weight_mat * y_mat))
     return test_point * ws
@@ -64,7 +64,7 @@ def ridge_regression(x_mat, y_mat, lambda_=0.2):
     x_t_x = x_mat.T * x_mat
     denominator = x_t_x + eye(shape(x_mat)[1]) * lambda_
     if linalg.det(denominator) == 0.0:
-        print('This matrix is singular, cannot do inverse.')
+        print("This matrix is singular, cannot do inverse.")
         return
     ws = denominator.I * (x_mat.T * y_mat)
     return ws
@@ -130,6 +130,7 @@ def forward_stage_wise_linear_regression(x_list, y_list, eps=0.01, loop=100):
 
 def plot_standard(x_list, y_list, ws):
     import matplotlib.pyplot as plt
+
     x_mat = mat(x_list)
     y_mat = mat(y_list).T
     fig = plt.figure()
@@ -146,6 +147,7 @@ def plot_standard(x_list, y_list, ws):
 
 def plot_lwlr(x_list, y_list, y_hat):
     import matplotlib.pyplot as plt
+
     # sort x_list
     x_mat = mat(x_list)
     sort_idx = x_mat[:, 1].argsort(0)
@@ -153,25 +155,26 @@ def plot_lwlr(x_list, y_list, y_hat):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.plot(x_sort[:, 1], y_hat[sort_idx])
-    ax.scatter(x_mat[:, 1].flatten().A[0], mat(y_list).T.flatten().A[0], s=2, c='red')
+    ax.scatter(x_mat[:, 1].flatten().A[0], mat(y_list).T.flatten().A[0], s=2, c="red")
     plt.show()
 
 
 def plot_ridge(w_mat):
     import matplotlib.pyplot as plt
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.plot(w_mat)
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # x_list_, y_list_ = load_data_set('resource/ex0.txt')
     # ws_ = standard_regression(x_list_, y_list_)
     # plot_standard(x_list_, y_list_, ws_)
     # y_hat_ = lwlr_test(x_list_, x_list_, y_list_, 0.003)
     # plot_lwlr(x_list_, y_list_, y_hat_)
-    ab_x_, ab_y_ = load_data_set('resource/abalone.txt')
+    ab_x_, ab_y_ = load_data_set("resource/abalone.txt")
     # w_mat_ = ridge_test(ab_x, ab_y)
     # plot_ridge(w_mat_)
     print(forward_stage_wise_linear_regression(ab_x_, ab_y_, 0.001, 5000))

@@ -4,14 +4,15 @@
 # @author  : mystic
 # @date    : 2017/11/21 20:40
 """
-    naive bayes classifier
-    优点:
-        在数据较少的情况下仍然有效,可以处理多类别问题
-    缺点:
-        对于输入数据的准备方式较为敏感
-    适用数据类型:
-        标称型数据
+naive bayes classifier
+优点:
+    在数据较少的情况下仍然有效,可以处理多类别问题
+缺点:
+    对于输入数据的准备方式较为敏感
+适用数据类型:
+    标称型数据
 """
+
 import re
 
 import feedparser
@@ -19,12 +20,14 @@ from numpy import *
 
 
 def load_data_set():
-    posting_list = [['my', 'dog', 'has', 'flea', 'problems', 'help', 'please'],
-                    ['maybe', 'not', 'take', 'him', 'to', 'dog', 'park', 'stupid'],
-                    ['my', 'dalmation', 'is', 'so', 'cute', 'I', 'love', 'him'],
-                    ['stop', 'posting', 'stupid', 'worthless', 'garbage'],
-                    ['mr', 'licks', 'ate', 'my', 'steak', 'how', 'to', 'stop', 'him'],
-                    ['quit', 'buying', 'worthless', 'dog', 'food', 'stupid']]
+    posting_list = [
+        ["my", "dog", "has", "flea", "problems", "help", "please"],
+        ["maybe", "not", "take", "him", "to", "dog", "park", "stupid"],
+        ["my", "dalmation", "is", "so", "cute", "I", "love", "him"],
+        ["stop", "posting", "stupid", "worthless", "garbage"],
+        ["mr", "licks", "ate", "my", "steak", "how", "to", "stop", "him"],
+        ["quit", "buying", "worthless", "dog", "food", "stupid"],
+    ]
     class_vector = [0, 1, 0, 1, 0, 1]  # 1 is abusive, 0 not
     return posting_list, class_vector
 
@@ -121,7 +124,7 @@ def classify_naive_bayes(vector2classify, p0_vector, p1_vector, p_class1):
 
 
 def text_parse(big_str):
-    list_tokens = re.split(r'\W*', big_str)
+    list_tokens = re.split(r"\W*", big_str)
     return [token.lower() for token in list_tokens if len(token) > 2]
 
 
@@ -136,11 +139,15 @@ def spam_test():
     # 遍历的文件名是1-25
     for i in range(1, 26):
         # 读取spam文件,忽略编码解析错误的字符
-        word_list = text_parse(open('resource/email/spam/%d.txt' % i, errors='ignore').read())
+        word_list = text_parse(
+            open("resource/email/spam/%d.txt" % i, errors="ignore").read()
+        )
         doc_list.append(word_list)
         full_text.extend(word_list)
         class_list.append(1)
-        word_list = text_parse(open('resource/email/ham/%d.txt' % i, errors='ignore').read())
+        word_list = text_parse(
+            open("resource/email/ham/%d.txt" % i, errors="ignore").read()
+        )
         doc_list.append(word_list)
         full_text.extend(word_list)
         class_list.append(0)
@@ -153,7 +160,7 @@ def spam_test():
     for i in range(10):
         random_index = int(random.uniform(0, len(train_set)))
         test_set.append(train_set[random_index])
-        del (train_set[random_index])
+        del train_set[random_index]
     train_matrix = []
     train_classes = []
     # 进行训练
@@ -165,9 +172,12 @@ def spam_test():
     error_count = 0
     for doc_idx in test_set:
         word_vector = set_words2vector(vocabulary_list, doc_list[doc_idx])
-        if classify_naive_bayes(word_vector, p0_vector, p1_vector, p_spam) != class_list[doc_idx]:
+        if (
+            classify_naive_bayes(word_vector, p0_vector, p1_vector, p_spam)
+            != class_list[doc_idx]
+        ):
             error_count += 1
-    print('The error rate is ', error_count / len(test_set))
+    print("The error rate is ", error_count / len(test_set))
 
 
 def calc_most_frequency(vocabulary_list, full_text):
@@ -180,8 +190,9 @@ def calc_most_frequency(vocabulary_list, full_text):
     frequency_dict = {}
     for token in vocabulary_list:
         frequency_dict[token] = full_text.count(token)
-    sorted_frequency = sorted(frequency_dict.items(),
-                              key=lambda obj: obj[1], reverse=True)
+    sorted_frequency = sorted(
+        frequency_dict.items(), key=lambda obj: obj[1], reverse=True
+    )
     return sorted_frequency[:30]
 
 
@@ -189,13 +200,13 @@ def local_words(feed1, feed0):
     doc_list = []
     class_list = []
     full_text = []
-    min_len = min(len(feed1['entries']), len(feed0['entries']))
+    min_len = min(len(feed1["entries"]), len(feed0["entries"]))
     for i in range(min_len):
-        word_list = text_parse(feed1['entries'][i]['summary'])
+        word_list = text_parse(feed1["entries"][i]["summary"])
         doc_list.append(word_list)
         full_text.extend(word_list)
         class_list.append(1)
-        word_list = text_parse(feed0['entries'][i]['summary'])
+        word_list = text_parse(feed0["entries"][i]["summary"])
         doc_list.append(word_list)
         full_text.extend(word_list)
         class_list.append(0)
@@ -211,7 +222,7 @@ def local_words(feed1, feed0):
     for i in range(5):
         random_idx = int(random.uniform(0, len(train_set)))
         test_set.append(train_set[random_idx])
-        del (train_set[random_idx])
+        del train_set[random_idx]
     train_matrix = []
     train_classes = []
     for doc_idx in train_set:
@@ -224,9 +235,12 @@ def local_words(feed1, feed0):
     for doc_idx in test_set:
         word_vector = bag_words2vector(vocabulary_list, doc_list[doc_idx])
         # 比较模型的结果与实际结果
-        if classify_naive_bayes(word_vector, p0_vector, p1_vector, p_spam) != class_list[doc_idx]:
+        if (
+            classify_naive_bayes(word_vector, p0_vector, p1_vector, p_spam)
+            != class_list[doc_idx]
+        ):
             error_count += 1
-    print('The error rate is ', error_count / len(test_set))
+    print("The error rate is ", error_count / len(test_set))
     return vocabulary_list, p0_vector, p1_vector
 
 
@@ -246,16 +260,16 @@ def get_top_words(feed1, feed0):
         if p1_v[i] > -6.0:
             top_1.append((vocab[i], p1_v[i]))
     sorted_0 = sorted(top_0, key=lambda obj: obj[1], reverse=True)
-    print('00000000000000000000000000000000000000')
+    print("00000000000000000000000000000000000000")
     for item in sorted_0:
         print(item[0])
     sorted_1 = sorted(top_1, key=lambda obj: obj[1], reverse=True)
-    print('11111111111111111111111111111111111111')
+    print("11111111111111111111111111111111111111")
     for item in sorted_1:
         print(item[0])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     list_post, list_class = load_data_set()
     my_vocabulary_list = create_vocabulary_list(list_post)
     # print(my_vocabulary_list)
@@ -271,14 +285,14 @@ if __name__ == '__main__':
     # print('p0_vec', p0_vec)
     # print('p1_vec:', p1_vec)
     # print('p_abusive:', p_abusive)
-    test_entry = ['love', 'my', 'dalmation']
+    test_entry = ["love", "my", "dalmation"]
     # test_entry = ['stupid', 'garbage']
     this_doc = set_words2vector(my_vocabulary_list, test_entry)
     # print(test_entry, 'classified as: ', classify_naive_bayes(this_doc, p0_vec, p1_vec, p_abusive))
     # 测试邮件是否为垃圾邮件
     # spam_test()
     # NewYork
-    ny = feedparser.parse('https://newyork.craigslist.org/search/stp?format=rss')
+    ny = feedparser.parse("https://newyork.craigslist.org/search/stp?format=rss")
     # San Francisco Bay
-    sf = feedparser.parse('https://sfbay.craigslist.org/search/stp?format=rss')
+    sf = feedparser.parse("https://sfbay.craigslist.org/search/stp?format=rss")
     get_top_words(ny, sf)

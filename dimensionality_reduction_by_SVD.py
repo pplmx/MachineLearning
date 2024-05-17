@@ -8,31 +8,36 @@
 缺点: 数据的转换可能难以理解
 适用数据类型: 数值型数据
 """
+
 from numpy import linalg, corrcoef, shape, mat, eye, nonzero, logical_and, zeros
 
 
 def load_external_data():
-    return [[0, 0, 0, 2, 2],
-            [0, 0, 0, 3, 3],
-            [0, 0, 0, 1, 1],
-            [1, 1, 1, 0, 0],
-            [2, 2, 2, 0, 0],
-            [5, 5, 5, 0, 0],
-            [1, 1, 1, 0, 0]]
+    return [
+        [0, 0, 0, 2, 2],
+        [0, 0, 0, 3, 3],
+        [0, 0, 0, 1, 1],
+        [1, 1, 1, 0, 0],
+        [2, 2, 2, 0, 0],
+        [5, 5, 5, 0, 0],
+        [1, 1, 1, 0, 0],
+    ]
 
 
 def load_external_data2():
-    return [[0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 5],
-            [0, 0, 0, 3, 0, 4, 0, 0, 0, 0, 3],
-            [0, 0, 0, 0, 4, 0, 0, 1, 0, 4, 0],
-            [3, 3, 4, 0, 0, 0, 0, 2, 2, 0, 0],
-            [5, 4, 5, 0, 0, 0, 0, 5, 5, 0, 0],
-            [0, 0, 0, 0, 5, 0, 1, 0, 0, 5, 0],
-            [4, 3, 4, 0, 0, 0, 0, 5, 5, 0, 1],
-            [0, 0, 0, 4, 0, 4, 0, 0, 0, 0, 4],
-            [0, 0, 0, 2, 0, 2, 5, 0, 0, 1, 2],
-            [0, 0, 0, 0, 5, 0, 0, 0, 0, 4, 0],
-            [1, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0]]
+    return [
+        [0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 5],
+        [0, 0, 0, 3, 0, 4, 0, 0, 0, 0, 3],
+        [0, 0, 0, 0, 4, 0, 0, 1, 0, 4, 0],
+        [3, 3, 4, 0, 0, 0, 0, 2, 2, 0, 0],
+        [5, 4, 5, 0, 0, 0, 0, 5, 5, 0, 0],
+        [0, 0, 0, 0, 5, 0, 1, 0, 0, 5, 0],
+        [4, 3, 4, 0, 0, 0, 0, 5, 5, 0, 1],
+        [0, 0, 0, 4, 0, 4, 0, 0, 0, 0, 4],
+        [0, 0, 0, 2, 0, 2, 5, 0, 0, 1, 2],
+        [0, 0, 0, 0, 5, 0, 0, 0, 0, 4, 0],
+        [1, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0],
+    ]
 
 
 def euclidean_similarity(input_a, input_b):
@@ -63,8 +68,10 @@ def stand_estimate(data_mat, user, similarity_measure, item):
         if len(overlap) == 0:
             similarity = 0
         else:
-            similarity = similarity_measure(data_mat[overlap, item], data_mat[overlap, j])
-        print('the %d and %d similarity is: %f' % (item, j, similarity))
+            similarity = similarity_measure(
+                data_mat[overlap, item], data_mat[overlap, j]
+            )
+        print("the %d and %d similarity is: %f" % (item, j, similarity))
         similarity_total += similarity
         rate_similarity_total += similarity * user_rating
     if similarity_total == 0:
@@ -84,8 +91,10 @@ def svd_estimate(data_mat, user, similarity_measure, item):
         user_rating = data_mat[user, j]
         if user_rating == 0 or j == item:
             continue
-        similarity = similarity_measure(x_formed_items[item, :].T, x_formed_items[j, :].T)
-        print('the %d and %d similarity is: %f' % (item, j, similarity))
+        similarity = similarity_measure(
+            x_formed_items[item, :].T, x_formed_items[j, :].T
+        )
+        print("the %d and %d similarity is: %f" % (item, j, similarity))
         similarity_total += similarity
         rate_similarity_total += similarity * user_rating
     if similarity_total == 0:
@@ -94,10 +103,16 @@ def svd_estimate(data_mat, user, similarity_measure, item):
         return rate_similarity_total / similarity_total
 
 
-def recommend(data_mat, user, n=3, similarity_measure=cosine_similarity, estimate_method=stand_estimate):
+def recommend(
+    data_mat,
+    user,
+    n=3,
+    similarity_measure=cosine_similarity,
+    estimate_method=stand_estimate,
+):
     unrated_items = nonzero(data_mat[user, :].A == 0)[1]  # find unrated items
     if len(unrated_items) == 0:
-        return 'you rated everything'
+        return "you rated everything"
     item_scores = []
     for item in unrated_items:
         estimated_score = estimate_method(data_mat, user, similarity_measure, item)
@@ -112,12 +127,12 @@ def print_matrix(input_matrix, thresh=0.8):
                 print(1)
             else:
                 print(0)
-        print('')
+        print("")
 
 
 def image_compress(num_s_v=3, thresh=0.8):
     myl = []
-    for line in open('resource/0_5.txt').readlines():
+    for line in open("resource/0_5.txt").readlines():
         new_row = []
         for i in range(32):
             new_row.append(int(line[i]))
@@ -134,5 +149,5 @@ def image_compress(num_s_v=3, thresh=0.8):
     print_matrix(recon_mat, thresh)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

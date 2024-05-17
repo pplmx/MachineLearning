@@ -29,22 +29,19 @@
     同SVM一样,AdaBoost预测两个类别中的一个
     如果应用到多个类别,需要像多类SVM的做法一样,对AdaBoost进行修改
 """
+
 from numpy import mat, ones, shape, zeros, inf, log, multiply, exp, sign, array
 
 
 def load_simple_data():
-    data_mat = mat([[1., 2.1],
-                    [2., 1.1],
-                    [1.3, 1.],
-                    [1., 1.],
-                    [2., 1.]])
+    data_mat = mat([[1.0, 2.1], [2.0, 1.1], [1.3, 1.0], [1.0, 1.0], [2.0, 1.0]])
     class_label_list = [1.0, 1.0, -1.0, -1.0, 1.0]
     return data_mat, class_label_list
 
 
 def stump_classify(data_mat, dimension, thresh_val, thresh_unequal):
     return_arr = ones((shape(data_mat)[0], 1))
-    if thresh_unequal == 'lt':
+    if thresh_unequal == "lt":
         return_arr[data_mat[:, dimension] <= thresh_val] = -1.0
     else:
         return_arr[data_mat[:, dimension] > thresh_val] = 1.0
@@ -75,8 +72,8 @@ def build_stump(data_list, class_label_list, d):
         step_size = (range_max - range_min) / num_steps
         # loop over all range in current dimension
         for j in range(-1, int(num_steps) + 1):
-            for unequal in ['lt', 'gt']:
-                thresh_val = (range_min + float(j) * step_size)
+            for unequal in ["lt", "gt"]:
+                thresh_val = range_min + float(j) * step_size
                 predicted_val_arr = stump_classify(data_mat, i, thresh_val, unequal)
                 err_mat = mat(ones((m, 1)))
                 err_mat[predicted_val_arr == label_mat] = 0
@@ -87,9 +84,9 @@ def build_stump(data_list, class_label_list, d):
                 if weighted_err < min_err:
                     min_err = weighted_err
                     best_class_estimation = predicted_val_arr.copy()
-                    best_stump['dimension'] = i
-                    best_stump['thresh'] = thresh_val
-                    best_stump['unequal'] = unequal
+                    best_stump["dimension"] = i
+                    best_stump["thresh"] = thresh_val
+                    best_stump["unequal"] = unequal
     return best_stump, min_err, best_class_estimation
 
 
@@ -106,7 +103,7 @@ def ada_boost_train_decision_stump(data_list, class_label_list, iterator=40):
         # calc alpha, throw in max(error,eps) to account for error=0
         # meanwhile, transfer list type to numerical type
         alpha = float(0.5 * log((1.0 - err) / max(err, 1e-16)))
-        best_stump['alpha'] = alpha
+        best_stump["alpha"] = alpha
         # store stump params in list
         weak_class_list.append(best_stump)
         # print('class estimation: ', class_estimation.T)
@@ -116,7 +113,9 @@ def ada_boost_train_decision_stump(data_list, class_label_list, iterator=40):
         d = d / d.sum()
         aggregate_class_estimation += alpha * class_estimation
         # print('aggregate class estimation: ', aggregate_class_estimation.T)
-        aggregate_errors = multiply(sign(aggregate_class_estimation) != mat(class_label_list).T, ones((m, 1)))
+        aggregate_errors = multiply(
+            sign(aggregate_class_estimation) != mat(class_label_list).T, ones((m, 1))
+        )
         err_rate = aggregate_errors.sum() / m
         # print('total error: %f\n' % err_rate)
         # calc training error of all classifiers, if this is 0 quit for loop early
@@ -131,9 +130,13 @@ def ada_classify(data2class, classifier_list):
     aggregate_class_estimation = mat(zeros((m, 1)))
     for i in range(len(classifier_list)):
         best_stump = classifier_list[i]
-        class_estimation = stump_classify(data_mat, best_stump['dimension'], best_stump['thresh'],
-                                          best_stump['unequal'])
-        aggregate_class_estimation += best_stump['alpha'] * class_estimation
+        class_estimation = stump_classify(
+            data_mat,
+            best_stump["dimension"],
+            best_stump["thresh"],
+            best_stump["unequal"],
+        )
+        aggregate_class_estimation += best_stump["alpha"] * class_estimation
         # print('aggregate class estimation: ', aggregate_class_estimation)
     return sign(aggregate_class_estimation)
 
@@ -142,10 +145,10 @@ def load_data_set(filename):
     data_list = []
     label_list = []
     with open(filename) as fr:
-        num_feature = len(fr.readline().split('\t'))
+        num_feature = len(fr.readline().split("\t"))
         for line in fr.readlines():
             line_list = []
-            current_line = line.strip().split('\t')
+            current_line = line.strip().split("\t")
             for i in range(num_feature - 1):
                 line_list.append(float(current_line[i]))
             data_list.append(line_list)
@@ -155,6 +158,7 @@ def load_data_set(filename):
 
 def plot_roc(prediction_strength, class_label_list):
     import matplotlib.pyplot as plt
+
     cursor = (1.0, 1.0)
     y_sum = 0.0
     num_pos_class = sum(array(class_label_list) == 1.0)
@@ -175,25 +179,27 @@ def plot_roc(prediction_strength, class_label_list):
             del_y = 0
             y_sum += cursor[1]
         # draw line from cur to (cur[0]-delX,cur[1]-delY)
-        ax.plot([cursor[0], cursor[0] - del_x], [cursor[1], cursor[1] - del_y], c='b')
+        ax.plot([cursor[0], cursor[0] - del_x], [cursor[1], cursor[1] - del_y], c="b")
         cursor = (cursor[0] - del_x, cursor[1] - del_y)
-    ax.plot([0, 1], [0, 1], 'b--')
-    plt.xlabel('False positive rate')
-    plt.ylabel('True positive rate')
-    plt.title('ROC curve for AdaBoost horse colic detection system')
+    ax.plot([0, 1], [0, 1], "b--")
+    plt.xlabel("False positive rate")
+    plt.ylabel("True positive rate")
+    plt.title("ROC curve for AdaBoost horse colic detection system")
     ax.axis([0, 1, 0, 1])
     plt.show()
-    print('the Area Under the Curve is: ', y_sum * x_step)
+    print("the Area Under the Curve is: ", y_sum * x_step)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # data_list_, label_list_ = load_simple_data()
-    data_list_, label_list_ = load_data_set('resource/horseColicTraining2.txt')
+    data_list_, label_list_ = load_data_set("resource/horseColicTraining2.txt")
     # single decision stump
     # DD = mat(ones((5, 1)) / 5)
     # print(build_stump(data_list_, label_list_, DD))
-    classifier_list_, aggregate_class_estimation_ = ada_boost_train_decision_stump(data_list_, label_list_, 10)
-    test_data_list_, test_label_list_ = load_data_set('resource/horseColicTest2.txt')
+    classifier_list_, aggregate_class_estimation_ = ada_boost_train_decision_stump(
+        data_list_, label_list_, 10
+    )
+    test_data_list_, test_label_list_ = load_data_set("resource/horseColicTest2.txt")
     prediction_ = ada_classify(test_data_list_, classifier_list_)
     err_mat_ = mat(ones((shape(prediction_)[0], 1)))
     err_rate_ = err_mat_[prediction_ != mat(test_label_list_).T].sum()

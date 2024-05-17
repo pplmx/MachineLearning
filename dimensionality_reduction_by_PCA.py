@@ -29,7 +29,7 @@ PCA:
 """
 
 
-def load_data_set(filename, delimiter='\t'):
+def load_data_set(filename, delimiter="\t"):
     with open(filename) as fr:
         str_list = [line.strip().split(delimiter) for line in fr.readlines()]
         data_list = [list(map(float, line)) for line in str_list]
@@ -50,7 +50,7 @@ def pca(data_mat, top_n_features=9999999):
     # ascending order, return idx,which doesn't change origin array
     eigen_val_idx_arr = argsort(eigen_val_arr)
     # Get the top N largest eigen vectors
-    eigen_val_idx_arr = eigen_val_idx_arr[:-(top_n_features + 1):-1]
+    eigen_val_idx_arr = eigen_val_idx_arr[: -(top_n_features + 1) : -1]
     red_eigen_vector_mat = eigen_vector_mat[:, eigen_val_idx_arr]
     low_dimension_data_mat = mean_removed * red_eigen_vector_mat
     # if returned all eigen vectors, reconstructed mat should be the same as input data_mat
@@ -59,46 +59,60 @@ def pca(data_mat, top_n_features=9999999):
 
 
 def replace_nan_with_mean():
-    data_mat = load_data_set('resource/secom.data', ' ')
+    data_mat = load_data_set("resource/secom.data", " ")
     num_feature = shape(data_mat)[1]
     for i in range(num_feature):
-        mean_val = mean(data_mat[nonzero(~isnan(data_mat[:, i].A))[0], i])  # values that are not NaN (a number)
-        data_mat[nonzero(isnan(data_mat[:, i].A))[0], i] = mean_val  # set NaN values to mean
+        mean_val = mean(
+            data_mat[nonzero(~isnan(data_mat[:, i].A))[0], i]
+        )  # values that are not NaN (a number)
+        data_mat[nonzero(isnan(data_mat[:, i].A))[0], i] = (
+            mean_val  # set NaN values to mean
+        )
     return data_mat
 
 
 def plt_fig(data_mat, reconstruct_mat):
     import matplotlib.pyplot as plt
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.scatter(data_mat[:, 0].flatten().A[0], data_mat[:, 1].flatten().A[0], marker='^', s=90)
-    ax.scatter(reconstruct_mat[:, 0].flatten().A[0], reconstruct_mat[:, 1].flatten().A[0], marker='o', s=50, c='red')
+    ax.scatter(
+        data_mat[:, 0].flatten().A[0], data_mat[:, 1].flatten().A[0], marker="^", s=90
+    )
+    ax.scatter(
+        reconstruct_mat[:, 0].flatten().A[0],
+        reconstruct_mat[:, 1].flatten().A[0],
+        marker="o",
+        s=50,
+        c="red",
+    )
     plt.show()
 
 
 def plg_fig_semiconductor(variance_percentage):
     import matplotlib.pyplot as plt
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.plot(range(1, 21), variance_percentage[:20], marker='^')
-    plt.xlabel('Principal Component Number')
-    plt.ylabel('Percentage of Variance')
+    ax.plot(range(1, 21), variance_percentage[:20], marker="^")
+    plt.xlabel("Principal Component Number")
+    plt.ylabel("Percentage of Variance")
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     arr_ = [1, 4, 7671, 123, 87678, 2, 54, 87]
     sort_idx_ = argsort(arr_)
     print(arr_)
     print(sort_idx_)
-    print(sort_idx_[: -4: -1])
+    print(sort_idx_[:-4:-1])
     """
         sort_idx[start: end: n]
         The positive and negative of n 
             indicate whether it needs reverse
         the value of n, which means steps
     """
-    data_mat_ = load_data_set('resource/testSet_pca.txt')
+    data_mat_ = load_data_set("resource/testSet_pca.txt")
     low_dimension_mat_, reconstruct_mat_ = pca(data_mat_, 1)
     plt_fig(data_mat_, reconstruct_mat_)
     # ==============================================================

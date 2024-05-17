@@ -58,8 +58,8 @@ def apriori_gen(l_k, k):  # creates c_k
     len_lk = len(l_k)
     for i in range(len_lk):
         for j in range(i + 1, len_lk):
-            l1 = list(l_k[i])[:k - 2]
-            l2 = list(l_k[j])[:k - 2]
+            l1 = list(l_k[i])[: k - 2]
+            l2 = list(l_k[j])[: k - 2]
             l1.sort()
             l2.sort()
             if l1 == l2:  # if first k-2 elements are equal
@@ -82,24 +82,32 @@ def apriori(data_set, min_support=0.5):
     return l1_to_list, support_data
 
 
-def generate_rules(l, support_data, min_confidence=0.7):  # supportData is a dict coming from scanD
+def generate_rules(
+    l, support_data, min_confidence=0.7
+):  # supportData is a dict coming from scanD
     big_rule_list = []
     for i in range(1, len(l)):  # only get the sets with two or more items
         for freqSet in l[i]:
             h1 = [frozenset([item]) for item in freqSet]
             if i > 1:
-                rules_from_consequence(freqSet, h1, support_data, big_rule_list, min_confidence)
+                rules_from_consequence(
+                    freqSet, h1, support_data, big_rule_list, min_confidence
+                )
             else:
-                calc_confidence(freqSet, h1, support_data, big_rule_list, min_confidence)
+                calc_confidence(
+                    freqSet, h1, support_data, big_rule_list, min_confidence
+                )
     return big_rule_list
 
 
 def calc_confidence(frequent_set, H, support_data, brl, min_confidence=0.7):
     pruned_h = []  # create new list to return
     for consequence in H:
-        conf = support_data[frequent_set] / support_data[frequent_set - consequence]  # calc confidence
+        conf = (
+            support_data[frequent_set] / support_data[frequent_set - consequence]
+        )  # calc confidence
         if conf >= min_confidence:
-            print(frequent_set - consequence, '-->', consequence, 'conf:', conf)
+            print(frequent_set - consequence, "-->", consequence, "conf:", conf)
             brl.append((frequent_set - consequence, consequence, conf))
             pruned_h.append(consequence)
     return pruned_h
@@ -111,7 +119,9 @@ def rules_from_consequence(frequent_set, h, support_data, brl, min_confidence=0.
         hmp1 = apriori_gen(h, m + 1)  # create Hm+1 new candidates
         hmp1 = calc_confidence(frequent_set, hmp1, support_data, brl, min_confidence)
         if len(hmp1) > 1:  # need at least two sets to merge
-            rules_from_consequence(frequent_set, hmp1, support_data, brl, min_confidence)
+            rules_from_consequence(
+                frequent_set, hmp1, support_data, brl, min_confidence
+            )
 
 
 def print_rules(rule_list, item_meaning):
@@ -124,6 +134,6 @@ def print_rules(rule_list, item_meaning):
         print("confidence: %f\n" % ruleTup[2])
 
 
-if __name__ == '__main__':
-    print('start apriori learning')
+if __name__ == "__main__":
+    print("start apriori learning")
     pass

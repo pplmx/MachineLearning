@@ -25,7 +25,7 @@ def load_data_set(filename):  # general function to parse tab -delimited floats
     data_list = []  # assume last column is target value
     with open(filename) as fr:
         for line in fr.readlines():
-            cur_line = line.strip().split('\t')
+            cur_line = line.strip().split("\t")
             # TODO the return type has changed in python3
             # before change: map(float, cur_line)
             # after change: list(map(float, cur_line))
@@ -61,12 +61,14 @@ def linear_solve(data_set):
     x = mat(ones((m, n)))
     # create a copy of data with 1 in 0th position
     # y = mat(ones((m, 1)))
-    x[:, 1:n] = data_set[:, 0:n - 1]
+    x[:, 1:n] = data_set[:, 0 : n - 1]
     y = data_set[:, -1]
     x_t_x = x.T * x
     if linalg.det(x_t_x) == 0:
-        raise NameError('This matrix is singular, cannot do inverse,\n\
-                try increasing the second value of ops')
+        raise NameError(
+            "This matrix is singular, cannot do inverse,\n\
+                try increasing the second value of ops"
+        )
     ws = x_t_x.I * (x.T * y)
     return ws, x, y
 
@@ -82,7 +84,9 @@ def model_err(data_set):
     return sum(power(y - y_hat, 2))
 
 
-def choose_best_split(data_mat, leaf_type=regression_leaf, err_type=regression_err, ops=(1, 4)):
+def choose_best_split(
+    data_mat, leaf_type=regression_leaf, err_type=regression_err, ops=(1, 4)
+):
     tolerance_split = ops[0]
     tolerance_n = ops[1]
     # if all the target variables are the same value: quit and return value
@@ -111,57 +115,64 @@ def choose_best_split(data_mat, leaf_type=regression_leaf, err_type=regression_e
     if (split - best_split) < tolerance_split:  # exit condition 2
         return None, leaf_type(data_mat)
     mat_0, mat_1 = bin_split_data_set(data_mat, best_idx, best_val)
-    if (shape(mat_0)[0] < tolerance_n) or (shape(mat_1)[0] < tolerance_n):  # exit condition 3
+    if (shape(mat_0)[0] < tolerance_n) or (
+        shape(mat_1)[0] < tolerance_n
+    ):  # exit condition 3
         return None, leaf_type(data_mat)
     # returns the best feature to split on
     # and the value used for that split
     return best_idx, best_val
 
 
-def create_tree(data_mat, leaf_type=regression_leaf, err_type=regression_err, ops=(1, 4)):
+def create_tree(
+    data_mat, leaf_type=regression_leaf, err_type=regression_err, ops=(1, 4)
+):
     # assume data_set is NumPy Mat so we can array filtering
     # choose the best split
     feature, val = choose_best_split(data_mat, leaf_type, err_type, ops)
     # if the splitting hit a stop condition return val
     if feature is None:
         return val
-    tree = {'split_idx': feature, 'split_val': val}
+    tree = {"split_idx": feature, "split_val": val}
     left_set, right_set = bin_split_data_set(data_mat, feature, val)
-    tree['left'] = create_tree(left_set, leaf_type, err_type, ops)
-    tree['right'] = create_tree(right_set, leaf_type, err_type, ops)
+    tree["left"] = create_tree(left_set, leaf_type, err_type, ops)
+    tree["right"] = create_tree(right_set, leaf_type, err_type, ops)
     return tree
 
 
 def is_tree(obj):
-    return type(obj).__name__ == 'dict'
+    return type(obj).__name__ == "dict"
 
 
 def get_mean(tree):
-    if is_tree(tree['right']):
-        tree['right'] = get_mean(tree['right'])
-    if is_tree(tree['left']):
-        tree['left'] = get_mean(tree['left'])
-    return (tree['left'] + tree['right']) / 2.0
+    if is_tree(tree["right"]):
+        tree["right"] = get_mean(tree["right"])
+    if is_tree(tree["left"]):
+        tree["left"] = get_mean(tree["left"])
+    return (tree["left"] + tree["right"]) / 2.0
 
 
 def prune(tree, test_data):
     # if we have no test data collapse the tree
     if shape(test_data)[0] == 0:
         return get_mean(tree)
-    left_set, right_set = bin_split_data_set(test_data, tree['split_idx'], tree['split_val'])
-    if is_tree(tree['right']) or is_tree(tree['left']):
-        if is_tree(tree['left']):
-            tree['left'] = prune(tree['left'], left_set)
-        if is_tree(tree['right']):
-            tree['right'] = prune(tree['right'], right_set)
+    left_set, right_set = bin_split_data_set(
+        test_data, tree["split_idx"], tree["split_val"]
+    )
+    if is_tree(tree["right"]) or is_tree(tree["left"]):
+        if is_tree(tree["left"]):
+            tree["left"] = prune(tree["left"], left_set)
+        if is_tree(tree["right"]):
+            tree["right"] = prune(tree["right"], right_set)
     else:
         # if they are now both leafs, see if we can merge them
-        err_no_merge = sum(power(left_set[:, 1] - tree['left'], 2)) + \
-                       sum(power(right_set[:, 1] - tree['right'], 2))
-        tree_mean = (tree['left'] + tree['right']) / 2.0
+        err_no_merge = sum(power(left_set[:, 1] - tree["left"], 2)) + sum(
+            power(right_set[:, 1] - tree["right"], 2)
+        )
+        tree_mean = (tree["left"] + tree["right"]) / 2.0
         err_merge = sum(power(test_data[:, 1] - tree_mean, 2))
         if err_merge < err_no_merge:
-            print('Merging')
+            print("Merging")
             return tree_mean
         else:
             return tree
@@ -175,23 +186,23 @@ def regression_tree_evaluation(model):
 def model_tree_evaluation(model, input_data):
     n = shape(input_data)[1]
     x = mat(ones((1, n + 1)))
-    x[:, 1:n + 1] = input_data
+    x[:, 1 : n + 1] = input_data
     return float(x * model)
 
 
 def tree_forecast(tree, input_data, model_eval=regression_tree_evaluation):
     if not is_tree(tree):
         return model_eval(tree)
-    if input_data[tree['split_idx']] > tree['split_val']:
-        if is_tree(tree['left']):
-            return tree_forecast(tree['left'], input_data, model_eval)
+    if input_data[tree["split_idx"]] > tree["split_val"]:
+        if is_tree(tree["left"]):
+            return tree_forecast(tree["left"], input_data, model_eval)
         else:
-            return model_eval(tree['left'])
+            return model_eval(tree["left"])
     else:
-        if is_tree(tree['right']):
-            return tree_forecast(tree['right'], input_data, model_eval)
+        if is_tree(tree["right"]):
+            return tree_forecast(tree["right"], input_data, model_eval)
         else:
-            return model_eval(tree['right'])
+            return model_eval(tree["right"])
 
 
 def create_forecast(tree, test_data, model_eval=regression_tree_evaluation):
@@ -202,7 +213,7 @@ def create_forecast(tree, test_data, model_eval=regression_tree_evaluation):
     return y_hat
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # data_list_ = load_data_set('resource/ex2.txt')
     # data_mat_ = mat(data_list_)
     # tree_ = create_tree(data_mat_, ops=(0, 1))
@@ -214,7 +225,7 @@ if __name__ == '__main__':
     #
     # print(json_)
 
-    data_list_ = load_data_set('resource/exp2.txt')
+    data_list_ = load_data_set("resource/exp2.txt")
     data_mat_ = mat(data_list_)
     tree_ = create_tree(data_mat_, model_leaf, model_err, ops=(1, 10))
     print(tree_)

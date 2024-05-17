@@ -29,7 +29,7 @@ class Tree:
         self.count += occur_times
 
     def display(self, idx=1):
-        print('  ' * idx, self.name, ' ', self.count)
+        print("  " * idx, self.name, " ", self.count)
         for child in self.children.values():
             child.display(idx + 1)
 
@@ -49,21 +49,29 @@ def create_tree(data_set, min_support=1):
 
     for k in list(header_table.keys()):  # remove items not meeting min_support
         if header_table[k] < min_support:
-            del (header_table[k])
+            del header_table[k]
     frequent_item_set = set(header_table.keys())
     if len(frequent_item_set) == 0:
         return None, None  # if no items meet min support -->get out
     for k in header_table:
-        header_table[k] = [header_table[k], None]  # reformat header_table to use Node link 
-    ret_tree = Tree('Null Set', 1, None)  # create tree
+        header_table[k] = [
+            header_table[k],
+            None,
+        ]  # reformat header_table to use Node link
+    ret_tree = Tree("Null Set", 1, None)  # create tree
     for transaction_set, count in data_set.items():  # go through data_set 2nd time
         local_dict = {}
         for item in transaction_set:  # put transaction items in order
             if item in frequent_item_set:
                 local_dict[item] = header_table[item][0]
         if len(local_dict) > 0:
-            ordered_items = [v[0] for v in sorted(local_dict.items(), key=lambda p: p[1], reverse=True)]
-            update_tree(ordered_items, ret_tree, header_table, count)  # populate tree with ordered frequent item set
+            ordered_items = [
+                v[0]
+                for v in sorted(local_dict.items(), key=lambda p: p[1], reverse=True)
+            ]
+            update_tree(
+                ordered_items, ret_tree, header_table, count
+            )  # populate tree with ordered frequent item set
     return ret_tree, header_table  # return tree and header table
 
 
@@ -81,7 +89,9 @@ def update_tree(items, input_tree, header_table, count):
 
 
 def update_header(node2test, target_node):  # this version does not use recursion
-    while node2test.nodeLink is not None:  # Do not use recursion to traverse a linked list!
+    while (
+        node2test.nodeLink is not None
+    ):  # Do not use recursion to traverse a linked list!
         node2test = node2test.nodeLink
     node2test.nodeLink = target_node
 
@@ -104,7 +114,9 @@ def find_prefix_path(tree_node):  # treeNode comes from header table
 
 
 def mine_tree(header_table, min_support, prefix, frequent_item_list):
-    big_l = [v[0] for v in sorted(header_table.items(), key=lambda p: p[1])]  # (sort header table)
+    big_l = [
+        v[0] for v in sorted(header_table.items(), key=lambda p: p[1])
+    ]  # (sort header table)
     for basePat in big_l:  # start from bottom of header table
         new_frequent_set = prefix.copy()
         new_frequent_set.add(basePat)
@@ -117,12 +129,14 @@ def mine_tree(header_table, min_support, prefix, frequent_item_list):
 
 
 def load_simple_data():
-    simple_data = [['r', 'z', 'h', 'j', 'p'],
-                   ['z', 'y', 'x', 'w', 'v', 'u', 't', 's'],
-                   ['z'],
-                   ['r', 'x', 'n', 'o', 's'],
-                   ['y', 'r', 'x', 'z', 'q', 't', 'p'],
-                   ['y', 'z', 'x', 'e', 'q', 's', 't', 'm']]
+    simple_data = [
+        ["r", "z", "h", "j", "p"],
+        ["z", "y", "x", "w", "v", "u", "t", "s"],
+        ["z"],
+        ["r", "x", "n", "o", "s"],
+        ["y", "r", "x", "z", "q", "t", "p"],
+        ["y", "z", "x", "e", "q", "s", "t", "m"],
+    ]
     return simple_data
 
 
@@ -133,8 +147,8 @@ def create_initial_set(data_set):
     return ret_dict
 
 
-if __name__ == '__main__':
-    with open('resource/kosarak.dat') as fr:
+if __name__ == "__main__":
+    with open("resource/kosarak.dat") as fr:
         parsed_data_ = [line.split() for line in fr.readlines()]
         initial_set_ = create_initial_set(parsed_data_)
         fp_tree_, header_tab_ = create_tree(initial_set_, 100000)
