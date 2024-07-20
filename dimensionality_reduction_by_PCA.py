@@ -3,7 +3,7 @@
 # @author  : mystic
 # @date    : 2018/5/27 16:35
 
-from numpy import mat, mean, cov, linalg, argsort, shape, nonzero, isnan
+from numpy import argsort, cov, isnan, linalg, mat, mean, nonzero, shape
 
 """
 三种降维技术:

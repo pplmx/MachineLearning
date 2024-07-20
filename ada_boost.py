@@ -30,7 +30,7 @@
     如果应用到多个类别,需要像多类SVM的做法一样,对AdaBoost进行修改
 """
 
-from numpy import mat, ones, shape, zeros, inf, log, multiply, exp, sign, array
+from numpy import array, exp, inf, log, mat, multiply, ones, shape, sign, zeros
 
 
 def load_simple_data():

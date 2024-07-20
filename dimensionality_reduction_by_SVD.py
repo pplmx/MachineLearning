@@ -9,7 +9,7 @@
 适用数据类型: 数值型数据
 """
 
-from numpy import linalg, corrcoef, shape, mat, eye, nonzero, logical_and, zeros
+from numpy import corrcoef, eye, linalg, logical_and, mat, nonzero, shape, zeros
 
 
 def load_external_data():

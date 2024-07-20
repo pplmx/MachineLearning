@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @author  : mystic
 # @date    : 2018/4/9 20:08
-from numpy import mat, linalg, shape, eye, exp, zeros, mean, var, inf
+from numpy import exp, eye, inf, linalg, mat, mean, shape, var, zeros
 
 
 def load_data_set(filename):

@@ -17,7 +17,7 @@
 6.使用算法: 使用训练出的树做预测,预测结果还可以用来做很多事情
 """
 
-from numpy import nonzero, mean, var, shape, inf, mat, power, ones, zeros
+from numpy import inf, mat, mean, nonzero, ones, power, shape, var, zeros
 from scipy import linalg
 
 

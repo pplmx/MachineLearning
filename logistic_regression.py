@@ -23,7 +23,7 @@ Logistic回归的一般过程
     数值型和标称型数据
 """
 
-from numpy import shape, exp, mat, ones, array, arange, random
+from numpy import arange, array, exp, mat, ones, random, shape
 
 
 def load_data_set():

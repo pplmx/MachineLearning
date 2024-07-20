@@ -2,17 +2,16 @@
 # -*- coding: utf-8 -*-
 # @author  : mystic
 # @date    : 2018/5/1 19:23
-from tkinter import Tk, Label, Entry, Button, IntVar, Checkbutton, END
+from tkinter import END, Button, Checkbutton, Entry, IntVar, Label, Tk
 
 import matplotlib
 
 matplotlib.use("TkAgg")
 
+import tree_regression
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from numpy import mat, arange
-
-import tree_regression
+from numpy import arange, mat
 
 
 def re_draw(tolerance_s, tolerance_n):

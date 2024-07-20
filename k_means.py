@@ -15,7 +15,7 @@
             通常情况下, 簇质心可以代表整个簇的数据来作出决策
 """
 
-from numpy import shape, zeros, mat, random, inf, nonzero, mean
+from numpy import inf, mat, mean, nonzero, random, shape, zeros
 from numpy.linalg import linalg
 
 

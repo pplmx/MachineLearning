@@ -22,7 +22,7 @@ SVM的一般流程
                 对多类问题应用,SVM需要对代码做一些修改
 """
 
-from numpy import random, mat, shape, zeros, multiply, nonzero, exp, sign
+from numpy import exp, mat, multiply, nonzero, random, shape, sign, zeros
 
 
 def load_data_set(file_name):
