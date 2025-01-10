@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # @author  : mystic
 # @date    : 2018/4/19 20:06
 

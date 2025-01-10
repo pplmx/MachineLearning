@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # @author  : mystic
 # @date    : 2018/5/1 19:23
 from tkinter import END, Button, Checkbutton, Entry, IntVar, Label, Tk

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # Created by PyCharm
 # @author  : mystic
 # @date    : 2/22/2018 14:49

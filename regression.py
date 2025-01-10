@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # @author  : mystic
 # @date    : 2018/4/9 20:08
 from numpy import exp, eye, inf, linalg, mat, mean, shape, var, zeros
